@@ -1,0 +1,64 @@
+/* Styles for InterviewTraining component (pills + centered submit) */
+.training {
+  padding: 20px 16px;
+}
+
+.training form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.training form > input[type="text"],
+.training form > select {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ffffff;
+  border: 0;
+  border-radius: 999px;
+  padding: 16px 34px;
+  box-shadow: 0 8px 20px rgba(3, 14, 27, 0.06);
+  font-size: 18px;
+  color: #111827;
+  min-width: 220px;
+  max-width: 34%;
+  box-sizing: border-box;
+}
+
+.training form > select {
+  cursor: pointer;
+}
+
+.training form > input[type="text"]::placeholder {
+  color: #9aa3ad;
+}
+
+.training form > input[type="button"] {
+  /* force onto its own row */
+  display: block;
+  margin: 20px auto 0;
+  padding: 12px 28px;
+  border-radius: 28px;
+  background: #ffffff;
+  border: 0;
+  box-shadow: 0 8px 20px rgba(3, 14, 27, 0.06);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .training form > input[type="text"],
+  .training form > select {
+    flex-basis: 100%;
+    max-width: 100%;
+    min-width: 0;
+    text-align: center;
+  }
+}
+
+

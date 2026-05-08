@@ -2,23 +2,25 @@ import { useState } from 'react'
 
 import hamburger from './../assets/hamburger.png'
 
+import HistoryNavigation from './HistoryNavigation'
 
 
-const SideBar = () => {
+
+const SideBar = ({setPage}) => {
     const [isOpen, setIsOpen] = useState(true)
-
     return(
         <>
         <aside id="sideBar" className={isOpen ? 'isOpen' : ''}>
             <button onClick={()=>{setIsOpen(!isOpen)}} className='hamburgerButton'>
                 <img src={hamburger} alt="ハンバーガーメニュー" />
             </button>
-            <section className={isOpen ? 'temp isOpen' : 'temp'}>
-                <span>面接対策を始める<br /></span>
-                <span>自己分析をする<br /></span>
-                <span>過去の面接対策の結果<br /></span>
-
-            </section>
+            <ul className={isOpen ? 'temp isOpen' : 'temp'}>
+                <li role="button" style={{ cursor: 'pointer' }} onClick={() => setPage("interviewTraining")}>面接対策を始める</li>
+                <li role="button" style={{ cursor: 'pointer' }} onClick={() => setPage("selfAnalysis")}>自己分析をする</li>
+                <li role="button" style={{ cursor: 'pointer' }} onClick={() => {setPage("history")}}>
+                    <HistoryNavigation></HistoryNavigation>    
+                </li>
+            </ul>
         </aside>
         </>
     )

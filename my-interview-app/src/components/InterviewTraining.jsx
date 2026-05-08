@@ -1,29 +1,68 @@
-import { useState } from "react";
+/*このプログラムは面接対策機能の対策画面の状態を管理します．
+面接対策では，質問，回答を繰り返し表示して指定回数回答を終えるまでこれを繰り返します．
+*/
 
-const InterviewTraining = () => {
-    const [temp, setTemp] = useState("仮");
+import { use, useState } from "react";
+import InterviewTrainingQuestion from "./InterviewTrainingQuestion";
+import InterviewTrainingAnswer from "./InterviewTrainingAnswer";
+
+
+const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurrentQuestion, sessionID}) => {
+    const [questionAnswerState, setQuestionAnswerState] = useState("question");
+    const [countAnswer, setCountAnswer] = useState(0);
+
+
+    const switchQuestionAnswer = (questionAnswerState) => {
+        if(questionAnswerState === "question"){
+            return(<InterviewTrainingQuestion 
+                setQuestionAnswerState={setQuestionAnswerState}
+                currentQuestion={currentQuestion}
+                ></InterviewTrainingQuestion>)
+        }
+        if(questionAnswerState === "answer"){
+            return(<InterviewTrainingAnswer 
+                setQuestionAnswerState={setQuestionAnswerState} 
+                setCountAnswer={setCountAnswer} 
+                countAnswer={countAnswer}
+                setCurrentQuestion={setCurrentQuestion}
+                sessionID={sessionID}
+                ></InterviewTrainingAnswer>)
+        }
+    }
+
+    const handleFinishTraining = async () => {
+        if (!sessionID) {
+            alert("セッションIDが存在しません．");
+            return;
+        }
+
+        try {
+            // バックエンドに分析要求を送信
+            console.log("分析を開始します")
+            const response = await fetch(`http://127.0.0.1:8000/api/process-db-data/${sessionID}`, {
+                method: "POST"
+            });
+            
+            if (!response.ok) {
+                throw new Error("分析処理に失敗しました．");
+            }
+            
+            // 分析が完了したら結果画面へ状態を遷移させる
+            setInterviewTrainingState("result");
+            
+        } catch (error) {
+            console.error("エラー:", error);
+            alert("分析処理中にエラーが発生しました．");
+        }
+    };
+
+    
+
     return(
-        <section className="training">
-            <form action="sample.cgi" method="POST">
-                <input type="text" name="URL" value={temp}/>
-                <select name="favorite_color" id="color-select" required>
-                    {/*第一項目をプレースホルダーとして使う小技です*/}
-                    <option value="" disabled selected>対策したい内容を選んでください</option>
-                    {/*value属性がPOST送信時の値になります*/}
-                    <option value="red">赤</option>
-                    <option value="blue">青</option>
-                    <option value="green">緑</option>
-                </select>
-                {/*name属性がPOST送信時のキーになります*/}
-                <select name="favorite_color" id="color-select" required>
-                    {/*第一項目をプレースホルダーとして使う小技です*/}
-                    <option value="" disabled selected>規模を選んでください</option>
-                    {/*value属性がPOST送信時の値になります*/}
-                    <option value="red">赤</option>
-                    <option value="blue">青</option>
-                    <option value="green">緑</option>
-                </select>
-            </form>
+        <section>
+        <button onClick={handleFinishTraining}>結果に移る</button>
+        {switchQuestionAnswer(questionAnswerState)}
+        <h2>{countAnswer}回の回答を終えました．</h2>
         </section>
     )
 }

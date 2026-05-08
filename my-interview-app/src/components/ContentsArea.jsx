@@ -1,19 +1,31 @@
 import { useState } from 'react'
 
-import InterviewTraining from './InterviewTraining'
+import InterviewTrainingArea from './InterviewTrainingArea'
+import Self_Analysis from './Self_Analysis'
+import HistoryArea from './HistoryArea'
 
 import reactLogo from './../assets/react.svg'
 import viteLogo from './../assets/vite.svg'
 import heroImg from './../assets/hero.png'
 
 
-const ContentsArea = () =>{
+const ContentsArea = ({page}) =>{
 
-    const [count, setCount] = useState(0)
+    const switchContentsArea = (page) => {
+        if(page === "interviewTraining"){
+            return <InterviewTrainingArea></InterviewTrainingArea>;
+        }
+        if(page === "selfAnalysis"){
+            return <Self_Analysis></Self_Analysis>;
+        }
+        if(page == "history"){
+            return <HistoryArea></HistoryArea>;
+        }
+    }
     return(
         <>
             <main id="contentsArea">
-                <InterviewTraining></InterviewTraining>
+                {switchContentsArea(page)}
             </main>
         </>
     )
