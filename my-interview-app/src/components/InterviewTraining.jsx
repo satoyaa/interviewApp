@@ -5,11 +5,14 @@
 import { use, useState } from "react";
 import InterviewTrainingQuestion from "./InterviewTrainingQuestion";
 import InterviewTrainingAnswer from "./InterviewTrainingAnswer";
+import reactIcon from "../assets/react.svg";
+import {phases} from "./Phase/Phases";
 
 
-const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurrentQuestion, sessionID}) => {
+
+const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurrentQuestion, sessionID, interviewPhase, setInterviewPhase, maxAnswers, company}) => {
     const [questionAnswerState, setQuestionAnswerState] = useState("question");
-    const [countAnswer, setCountAnswer] = useState(0);
+    const [countAnswer, setCountAnswer] = useState(1);
 
 
     const switchQuestionAnswer = (questionAnswerState) => {
@@ -21,11 +24,15 @@ const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurre
         }
         if(questionAnswerState === "answer"){
             return(<InterviewTrainingAnswer 
-                setQuestionAnswerState={setQuestionAnswerState} 
+                setQuestionAnswerState={setQuestionAnswerState}
+                countAnswer={countAnswer} 
                 setCountAnswer={setCountAnswer} 
-                countAnswer={countAnswer}
                 setCurrentQuestion={setCurrentQuestion}
                 sessionID={sessionID}
+                setInterviewTrainingState={setInterviewTrainingState}
+                setInterviewPhase={setInterviewPhase}
+                maxAnswers={maxAnswers}
+                company={company}
                 ></InterviewTrainingAnswer>)
         }
     }
@@ -38,7 +45,7 @@ const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurre
 
         try {
             // バックエンドに分析要求を送信
-            console.log("分析を開始します")
+            setInterviewTrainingState("loading");
             const response = await fetch(`http://127.0.0.1:8000/api/process-db-data/${sessionID}`, {
                 method: "POST"
             });
@@ -59,10 +66,29 @@ const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurre
     
 
     return(
-        <section>
-        <button onClick={handleFinishTraining}>結果に移る</button>
-        {switchQuestionAnswer(questionAnswerState)}
-        <h2>{countAnswer}回の回答を終えました．</h2>
+        <section className="interviewTraining">
+            <header className="interviewHeader">
+                <div className="headerLeft">
+                    <div className="qLabel">質問</div>
+                    <div className="qCounter">{countAnswer}/{maxAnswers}</div>
+                    <div>{phases[0][interviewPhase]}</div>
+                </div>
+                <div className="headerRight">
+                    <button className="finishButton" onClick={handleFinishTraining}>終了する</button>
+                </div>
+            </header>
+
+            <div className="interviewBody">
+                {questionAnswerState === "question" ? <div className="robotCol">
+                    <img src={reactIcon} alt="robot" className="robotIcon" />
+                </div> : <div></div>}
+                
+                <div className="bubbleCol">
+                    <div className="speechBubble">
+                        {switchQuestionAnswer(questionAnswerState)}
+                    </div>
+                </div>
+            </div>
         </section>
     )
 }

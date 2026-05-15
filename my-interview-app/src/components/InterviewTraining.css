@@ -1,47 +1,58 @@
-/* Styles for InterviewTraining component (pills + centered submit) */
+/* フォーム全体は縦並びに変更 */
 .training {
   padding: 20px 16px;
 }
 
 .training form {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
+  flex-direction: column; /* 上段と下段（ボタン）を分ける */
   align-items: center;
+  gap: 32px; /* 入力欄とボタンの間の余白 */
   max-width: 920px;
   margin: 0 auto;
 }
 
-.training form > input[type="text"],
-.training form > select {
+/* 3つの入力欄を横並びにするコンテナ */
+.input-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  width: 100%;
+}
+
+/* 入力欄のデザインと幅調整 */
+.input-group > input[type="text"],
+.input-group > select {
   -webkit-appearance: none;
   appearance: none;
   background: #ffffff;
   border: 0;
   border-radius: 999px;
-  padding: 16px 34px;
+  
+  /* 3つ並べるため少しpaddingを小さく調整 */
+  padding: 16px 20px; 
   box-shadow: 0 8px 20px rgba(3, 14, 27, 0.06);
-  font-size: 18px;
+  font-size: 16px; /* フォントサイズも調整 */
   color: #111827;
+  
+  /* 隙間(16px×2=32px)を引いた上で3等分する */
+  flex: 1 1 calc((100% - 32px) / 3);
   min-width: 220px;
-  max-width: 34%;
   box-sizing: border-box;
 }
 
-.training form > select {
+.input-group > select {
   cursor: pointer;
 }
 
-.training form > input[type="text"]::placeholder {
+.input-group > input[type="text"]::placeholder {
   color: #9aa3ad;
 }
 
+/* ボタンのスタイル */
 .training form > input[type="button"] {
-  /* force onto its own row */
-  display: block;
-  margin: 20px auto 0;
-  padding: 12px 28px;
+  padding: 14px 40px;
   border-radius: 28px;
   background: #ffffff;
   border: 0;
@@ -49,16 +60,176 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  transition: opacity 0.2s; /* ホバー時のアニメーション用（お好みで） */
 }
 
+.training form > input[type="button"]:hover {
+  opacity: 0.8;
+}
+
+/* スマホ表示時のレスポンシブ対応 */
 @media (max-width: 720px) {
-  .training form > input[type="text"],
-  .training form > select {
-    flex-basis: 100%;
+  .input-group > input[type="text"],
+  .input-group > select {
+    flex-basis: 100%; /* スマホでは縦に1つずつ並べる */
     max-width: 100%;
     min-width: 0;
     text-align: center;
   }
 }
 
+/* interview.css - styles for InterviewTraining layout (header, robot icon, speech bubble) */
 
+.interviewTraining{
+  padding: 18px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #111827;
+}
+
+.interviewHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom: 16px;
+}
+
+.headerLeft{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.qLabel{
+  font-weight:700;
+  font-size:18px;
+  color:#111827;
+}
+
+.qCounter{
+  font-size:18px;
+  color:#1f6fb8;
+  font-weight:700;
+}
+
+.finishButton{
+  background:#ffffff;
+  border:1px solid rgba(16,24,40,0.08);
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.interviewBody{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  justify-content:center; /* center the body on the page */
+}
+
+.robotCol{
+  width:56px;
+  display:flex;
+  justify-content:flex-start;
+}
+
+.robotIcon{
+  width:44px;
+  height:44px;
+  display:block;
+}
+
+.bubbleCol{
+  
+}
+
+.speechBubble{
+  background: #eef4f8; /* soft bluish gray */
+  border-radius:12px;
+  padding:16px 18px;
+  border:1px solid rgba(16,24,40,0.06);
+  box-shadow: 0 1px 4px rgba(16,24,40,0.04);
+  max-width:760px;
+  width: 50vw;
+}
+
+/* ensure inner text is left-aligned */
+.speechBubble p, .speechBubble h1, .speechBubble form{
+  text-align:left;
+  margin:0;
+}
+
+/* Layout the form inside the speech bubble: input fills available space, button at right */
+.speechBubble form{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.speechBubble form input[type="text"],
+.speechBubble form textarea{
+  flex:1 1 auto;
+  min-width:0; /* allow flex to shrink on small screens */
+  padding:12px 14px;
+  border: none; /* remove visible frame */
+  outline: none;
+  border-radius:8px;
+  background: transparent; /* blend into bubble */
+  box-shadow: none;
+  font-size:15px;
+  color:#0f172a;
+}
+
+/* Ensure textarea text wraps and preserves line breaks */
+.speechBubble form textarea{
+  white-space: pre-wrap;
+  word-break: break-word;
+  resize: vertical; /* allow vertical resize */
+}
+
+/* Hide native scrollbars but keep scrolling functionality */
+.speechBubble form textarea{
+  overflow: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.speechBubble form textarea::-webkit-scrollbar{
+  width: 0px;
+  height: 0px;
+}
+
+.speechBubble form input[type="button"],
+.speechBubble form input[type="submit"],
+.speechBubble > button{
+  flex: 0 0 auto;
+  margin-top:0;
+  padding:8px 12px;
+  border-radius:8px;
+  background:#ffffff;
+  border:1px solid rgba(16,24,40,0.08);
+  cursor:pointer;
+}
+
+@media (max-width:600px){
+  .speechBubble form{ flex-direction:column; align-items:stretch }
+  .speechBubble form input[type="button"], .speechBubble > button{ margin-left:0 }
+}
+
+/* placeholder styling for subtle hint color */
+.speechBubble form input[type="text"]::placeholder,
+.speechBubble form textarea::placeholder{
+  color: #9aa3ad;
+  opacity: 1;
+}
+
+/* remove focus ring on inputs but keep accessibility by ensuring focus outline can be enabled later if needed */
+.speechBubble form input[type="text"]:focus,
+.speechBubble form textarea:focus{
+  outline: none;
+}
+
+/* small responsive */
+@media (max-width:600px){
+  .interviewBody{ flex-direction:row }
+  .speechBubble{ padding:12px }
+  .robotCol{ width:44px }
+}

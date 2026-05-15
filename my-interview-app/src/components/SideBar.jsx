@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import hamburger from './../assets/hamburger.png'
+import './SideBar.css'
 
 import HistoryNavigation from './HistoryNavigation'
 
@@ -14,11 +15,11 @@ const SideBar = ({setPage}) => {
             <button onClick={()=>{setIsOpen(!isOpen)}} className='hamburgerButton'>
                 <img src={hamburger} alt="ハンバーガーメニュー" />
             </button>
-            <ul className={isOpen ? 'temp isOpen' : 'temp'}>
+            <ul className={isOpen ? 'sidebar isOpen' : 'sidebar'}>
                 <li role="button" style={{ cursor: 'pointer' }} onClick={() => setPage("interviewTraining")}>面接対策を始める</li>
                 <li role="button" style={{ cursor: 'pointer' }} onClick={() => setPage("selfAnalysis")}>自己分析をする</li>
-                <li role="button" style={{ cursor: 'pointer' }} onClick={() => {setPage("history")}}>
-                    <HistoryNavigation></HistoryNavigation>    
+                <li role="button" className="noHover" onClick={() => {setPage("history")}}>
+                    <HistoryNavigation></HistoryNavigation>
                 </li>
             </ul>
         </aside>

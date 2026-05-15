@@ -1,28 +1,26 @@
 import { useState } from "react";
 import "./InterviewTraining.css";
+import { phases } from "./Phase/Phases";
 
-const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, setSessionID}) => {
-    // フォームの状態を管理するためのstate
-    const [company, setCompany] = useState("");
-    const [domain, setDomain] = useState("");
-    const [scale, setScale] = useState("");
+const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, setSessionID,maxAnswers, setMaxAnswers, interviewPhase, company, setCompany}) => {
 
     const handleStart = async () => {
         // 簡単な入力チェック
-        if (!company || !domain || !scale) {
+        if (!company || maxAnswers <= 0) {
             alert("すべての項目を入力・選択してください．");
             return;
         }
+        console.log(maxAnswers);
 
         // FastAPIに送るデータをFormDataに詰める
         const formData = new FormData();
         formData.append("company_info", company);
-        formData.append("focus_area", domain);
-        formData.append("scale", scale); // 規模（質問数）を追加
+        formData.append("phase", phases[0][interviewPhase]);
 
         try {
             // FastAPIのAPIエンドポイントへPOSTリクエストを送信
             //個人開発なのでローカルホスト，ホスティングするならここを変更
+            setInterviewTrainingState("loading");
             const response = await fetch("http://127.0.0.1:8000/api/process-prompt", {
                 method: "POST",
                 body: formData,
@@ -55,24 +53,25 @@ const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, 
     return(
         <section className="training">
             <form onSubmit={(e) => e.preventDefault()}>
-                <input 
+                <div className="input-group">
+                    <input 
                     type="text" 
                     placeholder="ここに会社名やURLを入力してください" 
                     value={company} 
                     onChange={(e) => setCompany(e.target.value)}
-                />
-                <select value={domain} onChange={(e) => setDomain(e.target.value)} required>
-                    <option value="" disabled>対策したい内容を選んでください</option>
-                    <option value="全体">全体</option>
-                    <option value="自己PR">自己PR</option>
-                    <option value="志望動機">志望動機</option>
-                </select>
-                <select value={scale} onChange={(e) => setScale(e.target.value)} required>
-                    <option value="" disabled>規模を選んでください</option>
-                    <option value="3">3問</option>
-                    <option value="5">5問</option>
-                    <option value="10">10問</option>
-                </select>
+                    />
+                    {/*対策項目の調整，後ほど流れで対策したい*/}
+                    <select required>
+                        <option value="" disabled>対策したい内容を選んでください</option>
+                        <option value="normal">ノーマル</option>
+                    </select>
+                    <select value={maxAnswers} onChange={(e) => setMaxAnswers(Number(e.target.value))} required>
+                        <option value={0} disabled>深堀回数を選んでください</option>
+                        <option value={3}>3問</option>
+                        <option value={5}>5問</option>
+                        <option value={10}>10問</option>
+                    </select>
+                </div>
                 <input type="button" value="対策を開始する" onClick={handleStart}/>
             </form>
         </section>

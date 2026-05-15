@@ -1,0 +1,124 @@
+/* ResultVisual.css - styles for result_top_area and star bar */
+
+.result_top_area{
+  display:flex;
+  gap:24px;
+  align-items:flex-start;
+  padding: 18px 12px;
+}
+
+.result_left{
+  position:relative;
+  min-width: 320px;
+}
+
+.overallScore{
+  position:absolute;
+  top: -6px;
+  left: -6px;
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  background: transparent;
+}
+
+.scoreValue{
+  font-size:48px;
+  font-weight:700;
+  color:#1f6fb8; /* blue */
+  line-height:1;
+}
+
+.scoreMax{
+  font-size:14px;
+  color:#6b7280;
+  margin-top:6px;
+}
+
+.radarChart{
+  padding-top:24px; /* make space for score */
+}
+
+.result_right{
+  flex:1;
+  max-width:420px;
+}
+
+/* Star bar component */
+.resultStarBar{
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(16,24,40,0.06);
+}
+
+.starBarHeader{
+  font-weight:700;
+  color:#0f172a;
+  margin-bottom:8px;
+}
+
+.starBarList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  max-height: 420px;
+  overflow:auto;
+}
+
+.starBarItem{
+  display:grid;
+  grid-template-columns: 1fr auto auto;
+  gap:8px;
+  align-items:center;
+  padding:8px;
+  border-radius:8px;
+}
+
+.starBarLabel{
+  color:#111827;
+  font-size:14px;
+}
+
+.starBarStars{
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+
+.starWrap svg{ display:block }
+
+.starBarScore{
+  color:#6b7280;
+  font-size:13px;
+  min-width:36px;
+  text-align:right;
+}
+
+/* small screens fallback */
+@media (max-width: 800px){
+  .result_top_area{ flex-direction:column }
+  .result_left{ width:100%; min-width:unset }
+  .result_right{ width:100%; max-width:unset }
+}
+
+/* Result bottom area: ensure all text is left-aligned */
+.result_bottom_area{
+  text-align: left;
+  padding: 18px 12px;
+  color: #374151;
+}
+.result_bottom_area ul{ list-style:none; margin:0; padding:0 }
+.result_bottom_area li{
+  text-align:left;
+  margin-bottom: 18px;
+  line-height:1.8;
+  color:#4b5563;
+}
+.result_bottom_area h2{
+  margin:0 0 8px 0;
+  font-size:18px;
+  color:#0f172a;
+  font-weight:700;
+  text-align:left;
+}

@@ -1,4 +1,6 @@
 import ResultVisual from "./ResultVisual";
+import HistoryAnalyzeAgain from "./HistoryAnalyzeAgain.jsx";
+
 import { AppContext} from './Context/Context.jsx';
 import { useState, useContext, useEffect } from "react";
 
@@ -9,6 +11,8 @@ const HistoryArea = () => {
     const [title, setTitle] = useState("無題のタイトル");
     const [isLoading, setIsLoading] = useState(true);
     const {history_ID, setHistory_ID} = useContext(AppContext);
+    const [chatData, setChatData] = useState([]);
+    
 
     useEffect(() => {
         console.log("分析結果を取得します1")
@@ -28,9 +32,6 @@ const HistoryArea = () => {
                     throw new Error("結果の取得に失敗しました．");
                 }
                 const data = await response.json();
-
-                console.log(data.feedback);
-                console.log(data.title);
 
                 // バックエンドから受け取った feedback 配列をフロントエンド用に整形
                 if (data.feedback && data.feedback.length > 0) {
@@ -52,6 +53,15 @@ const HistoryArea = () => {
                     setFeedbackData(formattedFeedback);
                     setScoreData(formattedScore);
                 }
+
+                if(data.chat_data){
+                    const formattedChatData = data.chat_data.map(item => ({
+                        answer: item.content,
+                        question: item.llm_response
+                    }));
+                    setChatData(formattedChatData);
+                }
+                
 
                 // タイトルがあればセットする
                 if (data.title) {
@@ -81,7 +91,8 @@ const HistoryArea = () => {
 
     return (
         <section className="historyArea">
-        <ResultVisual score={scoreData} feedback={feedbackData} title={title}></ResultVisual>
+        <HistoryAnalyzeAgain history_ID={history_ID}></HistoryAnalyzeAgain>
+        <ResultVisual score={scoreData} feedback={feedbackData} title={title} chatData={chatData}></ResultVisual>
         </section>
     )
 }

@@ -15,23 +15,26 @@
 #sideBar{
   width: 80px;
   height: 100vh;
+  padding:10px;
   background-color: #f2f2f2;
   flex-direction: column;
   flex-shrink: 0;
   transition: width 0.3s ease;
-
+  display: flex;
   place-items: start;
+  place-content: start;
 }
 
 #sideBar.isOpen{
-  width: 200px;
+  width: 280px;
+
 }
 
-.temp{
+.sidebar{
   display: none;
 }
 
-.temp.isOpen{
+.sidebar.isOpen{
   display: block;
 }
 
@@ -43,6 +46,7 @@
 }
 
 .resultComponent{
+  padding: 50px;
 }
 
 .result_top_area{
