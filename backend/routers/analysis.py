@@ -9,7 +9,8 @@ from services.llm import call_llm_api_for_analyze
 
 router = APIRouter()
 
-
+##分析用の関数
+##面接対策終了時と再分析要求があったときに走る
 @router.post("/api/process-db-data/{session_id}")
 async def process_db_data(session_id: str, db: Session = Depends(get_db)):
     records = db.query(InterviewEntry).filter(InterviewEntry.session_id == session_id).order_by(InterviewEntry.id).all()
@@ -42,6 +43,7 @@ async def process_db_data(session_id: str, db: Session = Depends(get_db)):
     return {"status": "success", "session_id": session_id, "title": generated_title}
 
 
+##結果を表示するためにタイトル，分析データ，チャットを返す関数．
 @router.get("/api/feedback/{session_id}")
 def get_feedback(session_id: str, db: Session = Depends(get_db)):
     rec = db.query(Feedback).filter(Feedback.session_id == session_id).first()
@@ -52,16 +54,22 @@ def get_feedback(session_id: str, db: Session = Depends(get_db)):
     except Exception:
         parsed = []
 
+    # collect chat data (content and llm_response) from InterviewEntry for this session
+    entries = db.query(InterviewEntry).filter(InterviewEntry.session_id == session_id).order_by(InterviewEntry.id).all()
+    chat_data = [{"content": e.content, "llm_response": e.llm_response} for e in entries]
+    print(chat_data)
+
     return {
         "session_id": rec.session_id,
         "title": rec.title,
         "created_at": rec.created_at.isoformat(),
         "source_data": rec.source_data,
         "llm_response": rec.llm_response,
-        "feedback": parsed
+        "feedback": parsed,
+        "chat_data": chat_data
     }
 
-
+##ページ読み込み時に履歴一覧をナビゲーションバーに表示するための関数
 @router.get("/api/history")
 def get_history(db: Session = Depends(get_db)):
     results = db.query(Feedback.session_id, Feedback.title, Feedback.created_at).order_by(desc(Feedback.created_at)).all()
