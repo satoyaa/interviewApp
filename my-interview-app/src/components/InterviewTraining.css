@@ -233,3 +233,24 @@
   .speechBubble{ padding:12px }
   .robotCol{ width:44px }
 }
+
+
+.circle_button{
+  cursor: pointer;               /* カーソルを指マークにする */
+
+  /* 2. 丸いデザインにするための設定 */
+  width: 48px;                   /* ボタンの幅 */
+  height: 48px;                  /* ボタンの高さ（幅と同じにする） */
+  border-radius: 50%;            /* 50%にすることで完全な丸になる */
+  display: flex;
+  justify-content: center;       /* アイコンを左右中央に配置 */
+  align-items: center;           /* アイコンを上下中央に配置 */
+}
+
+.stop_button{
+  background-color: #8bb9e7; /* 2枚目の画像に近い水色 */
+}
+
+.submit_button{
+  background-color: #8bb9e7; /* 2枚目の画像に近い水色 */
+}

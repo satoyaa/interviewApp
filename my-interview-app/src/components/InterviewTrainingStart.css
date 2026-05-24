@@ -1,0 +1,165 @@
+.select_area{
+    background-color: #eef4f8;
+    height: 500px;
+    width: 80%;
+    display: flex;
+    margin: auto;
+    border-radius: 25px;
+}
+
+.select_items{
+    width: 200px;
+    height: 100%;
+    overflow-y: auto;
+
+    /* Firefox向けのスクロールバー設定（細くする） */
+    scrollbar-width: thin;
+}
+
+/* Chrome, Edge, Safari向けのスクロールバー設定 */
+.select_items::-webkit-scrollbar {
+    width: 6px; /* ここでスクロールバーの太さを指定（デフォルトは10px前後） */
+}
+
+.select_item{
+    margin: 10px auto;
+}
+
+.select_screen{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* リスト全体のデフォルトの余白や黒丸を消す */
+.select_list{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    overflow-y: auto;
+
+    /* Firefox向けのスクロールバー設定（細くする） */
+    scrollbar-width: thin;
+}
+
+/* Chrome, Edge, Safari向けのスクロールバー設定 */
+.select_list::-webkit-scrollbar {
+    width: 6px; /* ここでスクロールバーの太さを指定（デフォルトは10px前後） */
+}
+
+/* 選択された項目の大枠 */
+.selected_item{
+    display: flex;
+    align-items: center; /* 縦の配置を中央に揃える */
+    gap: 16px; /* 各要素（ボタンや文字）の間に均等な隙間を空ける */
+    
+    -webkit-appearance: none;
+    appearance: none;
+    background: #ffffff;
+    border: 0;
+    border-radius: 999px;
+    width: fit-content;
+
+    padding: 12px 24px; /* 上下を少しスリムにし，左右の余白を広げる */
+    margin: 10px auto; 
+    box-shadow: 0 4px 12px rgba(3, 14, 27, 0.08); /* 影を少し柔らかく調整 */
+    font-size: 16px;
+    color: #111827;
+    font-weight: 600;
+}
+
+.add_button {
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff; /* 薄いグレーの背景 */
+    border: 1px solid #e5e7eb; /* 薄い枠線 */
+    color: #374151;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease; /* ホバー時のアニメーション */
+    padding: 6px 16px;
+    border-radius: 999px; /* 角丸にする */
+}
+
+/* -------------------------------------
+   ここからボタンや操作エリアのスタイル追加
+------------------------------------- */
+
+/* +-と数値のエリア */
+.count-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* ボタンと数値の隙間 */
+    margin: 0 10px;
+}
+
+/* 数値部分 */
+.count-value {
+    min-width: 45px;
+    text-align: center;
+    font-variant-numeric: tabular-nums; /* 数字の幅を一定にしてガタつきを防ぐ */
+}
+
+/* 共通のボタンスタイル */
+.selected_item button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6; /* 薄いグレーの背景 */
+    border: 1px solid #e5e7eb; /* 薄い枠線 */
+    color: #374151;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease; /* ホバー時のアニメーション */
+}
+
+/* ホバー（カーソルを合わせた時）のスタイル */
+.selected_item button:hover:not(:disabled) {
+    background-color: #e5e7eb;
+    border-color: #d1d5db;
+}
+
+/* クリック時のスタイル */
+.selected_item button:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* 非活性（押せない状態）のスタイル */
+.selected_item button:disabled {
+    background-color: #f9fafb;
+    color: #d1d5db;
+    border-color: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* 上下矢印ボタン と +-ボタンを丸くする */
+.up_button, /* ^ボタン */
+.down_button, /* vボタン */
+.count-controls button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%; /* 完全な丸にする */
+}
+
+/* 削除ボタンの特別スタイル */
+.delete_button {
+    padding: 6px 16px;
+    background-color: #fee2e2; /* 薄い赤色で危険操作を明示 */
+    color: #ef4444;
+    border-color: #fca5a5;
+    border-radius: 999px; /* 角丸にする */
+}
+
+
+
+.delete_button:hover:not(:disabled) {
+    background-color: #fecaca;
+}

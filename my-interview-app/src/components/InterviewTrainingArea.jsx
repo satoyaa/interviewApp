@@ -8,7 +8,7 @@
 import InterviewTrainingStart from "./InterviewTrainingStart";
 import InterviewTraining from "./InterviewTraining";
 import InterviewTrainingResult from "./InterviewTrainingResult";
-import InterviewTrainingLoading from "./InterviewTriningLoading";
+
 import { useState } from "react";
 
 const InterviewTrainingArea = () => {
@@ -16,8 +16,8 @@ const InterviewTrainingArea = () => {
     const [currentQuestion, setCurrentQuestion] = useState("");
     const [sessionID, setSessionID] = useState("");
     const [interviewPhase, setInterviewPhase] = useState(0);
-    const [maxAnswers, setMaxAnswers] = useState(0);
     const [company, setCompany] = useState("");
+    const [selected, setSelected] = useState([]);
 
     const goToInterviewTraining = (interviewTrainingState) => {
         if(interviewTrainingState === "start"){
@@ -25,9 +25,9 @@ const InterviewTrainingArea = () => {
         setInterviewTrainingState={setInterviewTrainingState}
         setCurrentQuestion={setCurrentQuestion}
         setSessionID={setSessionID}
-        maxAnswers={maxAnswers}
-        setMaxAnswers={setMaxAnswers}
         interviewPhase={interviewPhase}
+        selected={selected}
+        setSelected={setSelected}
         company={company}
         setCompany={setCompany}
         ></InterviewTrainingStart>;
@@ -40,8 +40,10 @@ const InterviewTrainingArea = () => {
         sessionID={sessionID}
         interviewPhase={interviewPhase}
         setInterviewPhase={setInterviewPhase}
-        maxAnswers={maxAnswers}
+        selected={selected}
+        setSelected={setSelected}
         company={company}
+        setCompany={setCompany}
         ></InterviewTraining>;
         }
         if(interviewTrainingState === "result"){
@@ -49,9 +51,6 @@ const InterviewTrainingArea = () => {
         setInterviewTrainingState={setInterviewTrainingState}
         sessionID={sessionID}
         ></InterviewTrainingResult>;
-        }
-        if(interviewTrainingState === "loading"){
-        return <InterviewTrainingLoading></InterviewTrainingLoading>;
         }
     }
     return (

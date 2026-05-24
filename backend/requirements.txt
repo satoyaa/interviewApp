@@ -5,3 +5,7 @@ python-multipart
 google-genai
 python-dotenv
 uuid
+PyJWT
+google-auth
+pydantic
+slowapi

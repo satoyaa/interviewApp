@@ -74,3 +74,18 @@
   height: 100vh;
   overflow-y: auto;
 }
+
+button {
+  /* 1. デフォルトのスタイルを消す */
+  background-color: transparent; /* 通常時は無色 */
+  border: none;                  /* 枠線を消す */
+  outline: none;                 /* クリック時の青い枠線を消す */
+  padding: 0;
+  cursor: pointer;               /* カーソルを指マークにする */
+}
+
+.logout{
+  position: fixed;
+  right: 5px;
+  top: 5px;
+}

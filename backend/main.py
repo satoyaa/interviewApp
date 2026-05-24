@@ -7,6 +7,12 @@ import models
 
 from routers.interview import router as interview_router
 from routers.analysis import router as analysis_router
+from routers.login import router as login_router
+
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
+
+from core.limiter import limiter
 
 
 app = FastAPI(title="LLM Backend API")
@@ -23,7 +29,12 @@ app.add_middleware(
 # テーブル作成（models をインポートした後に実行）
 database.Base.metadata.create_all(bind=database.engine)
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # ルーターを登録
 app.include_router(interview_router)
 app.include_router(analysis_router)
+app.include_router(login_router)
+
 

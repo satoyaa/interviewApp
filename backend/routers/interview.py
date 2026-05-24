@@ -1,11 +1,36 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, Request, File, Form, HTTPException
 from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordBearer
 import uuid
 from database import get_db
 from models import InterviewEntry
 from services.llm import call_llm_api
+from typing import Optional
+import jwt
+from dotenv import load_dotenv
+import os
+from core.limiter import limiter
 
 router = APIRouter()
+
+load_dotenv()
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
+ALGORITHM = os.environ.get("ALGORITHM")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
+    try:
+        # トークンを解読（検証）する
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # /auth/google で設定した "sub" (メールアドレス) を取り出す
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="無効なトークンです")
+        return email
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="トークンの検証に失敗しました")
 
 
 @router.post("/init-db")
@@ -24,23 +49,35 @@ def get_data_from_db1(db: Session = Depends(get_db)):
 
 
 @router.post("/api/process-prompt")
+@limiter.limit("5/minute")
 async def process_prompt(
-    session_id: str = Form(None),
-    company_info: str = Form(None),
-    text_prompt: str = Form(None),
-    audio_file: UploadFile = File(None),
+    request: Request,
+    # user認証
+    current_user: str = Depends(get_current_user),
+    
+    session_id: Optional[str] = Form(None, description="一時ID"),
+    # max_length で文字列の長さを制限 (URLや会社名を想定し521と少し長めに設定)
+    company_info: Optional[str] = Form(None, max_length=512, description="会社名またはURL"),
+    # max_length=2000 で制限
+    text_prompt: Optional[str] = Form(None, max_length=2000, description="テキストプロンプト"),
+    
     db: Session = Depends(get_db),
-    phase: str = Form(None),
-    reset: bool = Form(None),
+    
+    # max_lengthで文字列の長さを制限（20字を想定）
+    phase: Optional[str] = Form(None, max_length=20, description="面接フェーズ"),
+    
+    # 型を Optional[bool] にすることで "true", "false", "1", "0" などを自動で boolean に変換・検証します
+    reset: Optional[bool] = Form(False, description="リセットフラグ"),
 ):
+    
+    request.state.user = current_user
+    if not text_prompt and not company_info and not phase:
+        raise HTTPException(status_code=400, detail="面接設定，または回答データを送信してください．")
+    
     user_input = ""
     if text_prompt:
         user_input = text_prompt
-    elif audio_file:
-        user_input = f"音声ファイル({audio_file.filename})から抽出したテキスト"
 
-    if not user_input and not company_info and not phase:
-        raise HTTPException(status_code=400, detail="面接設定，または回答データを送信してください．")
     if not session_id:
         session_id = str(uuid.uuid4())
 
