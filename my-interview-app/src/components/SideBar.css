@@ -102,4 +102,6 @@
 
 .historyNavigation{
     cursor: pointer;
+    overflow-y: auto;
+    height: 100%;
 }

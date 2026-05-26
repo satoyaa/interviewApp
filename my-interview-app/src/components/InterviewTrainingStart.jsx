@@ -10,7 +10,18 @@ const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, 
         { id: "pr", name: "自己PR" },
         { id: "gakutika", name: "ガクチカ" },
         { id: "tech", name: "技術面接" },
+        { id: "motivation", name: "志望動機" },
         { id: "ice", name: "アイスブレイク" },
+        { id: "research", name: "研究内容" },
+        { id: "portfolio", name: "制作物" },
+        { id: "intern", name: "インターン・アルバイト" },
+        { id: "teamwork", name: "チームワーク" },
+        { id: "solution", name: "問題解決経験" },
+        { id: "character", name: "性格・価値観調査" },
+        { id: "career", name: "キャリアビジョン" },
+        { id: "understanding", name: "企業理解確認" },
+        { id: "case", name: "ケース面接" },
+        { id: "english", name: "英語面接" },
     ];
     const [isLoading, setIsLoading] = useState(false);
 
