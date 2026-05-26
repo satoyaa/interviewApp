@@ -5,11 +5,6 @@
   place-content: center;
   place-items: center;
   flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
 }
 
 #sideBar{
@@ -38,6 +33,26 @@
   display: block;
 }
 
+@media screen and (max-width: 480px) {
+  #sideBar{
+    display: none;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
+  }
+  .hamburgerButton{
+    display: block;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+  }
+  #sideBar.isOpen{
+    display: block;
+  }
+}
+
 #contentsArea{
   flex-grow: 1;
 }
@@ -45,9 +60,6 @@
 .hamburgerButton{
 }
 
-.resultComponent{
-  padding: 50px;
-}
 
 .result_top_area{
   display: flex;
@@ -68,6 +80,14 @@
 .interviewTrainingResult{
   height: 100vh;
   overflow-y: auto;
+}
+
+@media screen and (max-width: 480px) {
+  .radarChart{
+    width: 100%;
+    max-width: 420px;
+    
+  }
 }
 
 .historyArea{

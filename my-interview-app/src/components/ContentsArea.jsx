@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import InterviewTrainingArea from './InterviewTrainingArea'
-import Self_Analysis from './Self_Analysis'
+import SelfAnalysis from './SelfAnalysis'
 import HistoryArea from './HistoryArea'
 
 import reactLogo from './../assets/react.svg'
@@ -16,7 +16,7 @@ const ContentsArea = ({page}) =>{
             return <InterviewTrainingArea></InterviewTrainingArea>;
         }
         if(page === "selfAnalysis"){
-            return <Self_Analysis></Self_Analysis>;
+            return <SelfAnalysis></SelfAnalysis>;
         }
         if(page == "history"){
             return <HistoryArea></HistoryArea>;

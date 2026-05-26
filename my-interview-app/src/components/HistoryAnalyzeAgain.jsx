@@ -4,17 +4,21 @@ const HistoryAnalyzeAgain = ({history_ID}) =>{
     console.log(history_ID);
     const [isAvailable, setIsAvailable] = useState(true)
     const handleAnalyzeAgain = async () =>{
-        console.log(history_ID);
         setIsAvailable(false);
         if (!history_ID) {
             alert("history_IDが存在しません．");
             return;
         }
 
+        const token = localStorage.getItem('token');
+
         try {
             // バックエンドに分析要求を送信
             const response = await fetch(`http://127.0.0.1:8000/api/process-db-data/${history_ID}`, {
-                method: "POST"
+                method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${token}` 
+                }
             });
             
             if (!response.ok) {

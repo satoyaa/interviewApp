@@ -25,9 +25,9 @@ const ResultVisual = ({score, feedback, title, chatData}) => {
                     </div>
                 </div>
 
-                <div className="result_right">
+                {/*<div className="result_right">
                     <ResultVisualStarBar scores={score.filter(item => item.subject !== '総評')} maxLevel={4} />
-                </div>
+                </div>*/}
             </div>
 
             <div className="result_bottom_area">

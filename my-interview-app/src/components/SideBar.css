@@ -14,6 +14,8 @@
   color: #222;
 }
 
+
+
 /* Hamburger toggle */
 .hamburgerButton{
   background: transparent;
@@ -25,6 +27,9 @@
   justify-content:center;
   cursor:pointer;
   border-radius:8px;
+  position: fixed;
+  top: 10px;
+  left: 10px;
 }
 .hamburgerButton img{ width:18px; height:18px; display:block }
 
@@ -34,6 +39,8 @@
   margin: 0;
   padding: 4px 2px;
 }
+
+
 
 .sidebar li{
   padding: 10px 12px;
@@ -79,8 +86,8 @@
 }
 
 /* Make list scrollable for long content */
-#sideBar .sidebarScrollable{
-  max-height: calc(100vh - 140px);
+#sideBar{
+  max-height: 100%;
   overflow-y: auto;
   padding-right: 6px;
 }

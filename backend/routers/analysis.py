@@ -1,18 +1,47 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 import json
+from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime
 from database import get_db
 from models import InterviewEntry, Feedback
 from services.llm import call_llm_api_for_analyze
+from dotenv import load_dotenv
+import os
+import jwt
+from core.limiter import limiter
 
 router = APIRouter()
 
+load_dotenv()
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
+ALGORITHM = os.environ.get("ALGORITHM")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
+    try:
+        # トークンを解読（検証）する
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # /auth/google で設定した "sub" (メールアドレス) を取り出す
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="無効なトークンです")
+        return email
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="トークンの検証に失敗しました")
+    
 ##分析用の関数
 ##面接対策終了時と再分析要求があったときに走る
 @router.post("/api/process-db-data/{session_id}")
-async def process_db_data(session_id: str, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+async def process_db_data(request: Request, 
+                          session_id: str, 
+                          current_user: str = Depends(get_current_user), 
+                          db: Session = Depends(get_db)):
+    request.state.user = current_user
     records = db.query(InterviewEntry).filter(InterviewEntry.session_id == session_id).order_by(InterviewEntry.id).all()
     if not records:
         raise HTTPException(status_code=404, detail="指定されたセッションのデータが見つかりません．")

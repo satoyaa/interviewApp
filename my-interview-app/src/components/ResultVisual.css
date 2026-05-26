@@ -102,6 +102,8 @@
   .result_right{ width:100%; max-width:unset }
 }
 
+
+
 /* Result bottom area: ensure all text is left-aligned */
 .result_bottom_area{
   text-align: left;
@@ -121,4 +123,18 @@
   color:#0f172a;
   font-weight:700;
   text-align:left;
+}
+
+.resultComponent{
+    padding: 50px;
+  }
+
+@media screen and (max-width: 480px) {
+  .resultComponent{
+    padding: 15px;
+  }
+
+  .result_bottom_area{
+    padding: 9px 6px;
+  }
 }
