@@ -8,6 +8,7 @@ import models
 from routers.interview import router as interview_router
 from routers.analysis import router as analysis_router
 from routers.login import router as login_router
+from routers.selfAnalysis import router as self_analysis
 
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
@@ -35,6 +36,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # ルーターを登録
 app.include_router(interview_router)
 app.include_router(analysis_router)
+app.include_router(self_analysis)
 app.include_router(login_router)
 
 

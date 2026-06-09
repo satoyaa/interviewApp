@@ -2,6 +2,9 @@ import os
 import json
 from dotenv import load_dotenv
 from fastapi import HTTPException
+from pydantic import BaseModel, Field
+import asyncio
+import random
 
 load_dotenv()
 
@@ -14,26 +17,59 @@ try:
     client = genai.Client(api_key=api_key)
 except Exception:
     client = None
+    
+class SelfAnalysisSchema(BaseModel):
+    episode_summary: str = Field(description="600文字程度のエピソード概要．活動の背景，課題，動機など．")
+    think_list: list[str] = Field(description="200文字以内で何を考えたか（複数可）")
+    gain_list: list[str] = Field(description="200文字以内で何を得たか（複数可）")
+    learn_list: list[str] = Field(description="200文字以内で何を学んだか（複数可）")
+    why_list: list[str] = Field(description="200文字以内でなぜそれをやったのか（複数可）")
+    appeal_list: list[str] = Field(description="200文字以内でどんな能力がアピールできるか（複数可）")
+    contribution_list: list[str] = Field(description="200文字以内でどう活かせるか（複数可）")
 
 
 async def call_llm_api(prompt: str) -> str:
     if client is None:
         raise HTTPException(status_code=500, detail="LLM client is not available.")
 
-    try:
-        response = await client.aio.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt
-        )
+    max_attempts = 6
+    base_delay = 0.5
 
-        if not getattr(response, "text", None):
-            return "AIからの応答が空でした．"
+    for attempt in range(1, max_attempts + 1):
+        try:
+            # APIの呼び出し
+            response = await client.aio.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt
+            )
 
-        return response.text
+            # 成功時の処理
+            if not getattr(response, "text", None):
+                return "AIからの応答が空でした．"
 
-    except Exception as e:
-        print(f"Gemini API Error: {e}")
-        raise HTTPException(status_code=500, detail="AIの応答取得に失敗しました．")
+            return response.text
+
+        except Exception as e:
+            error_msg = str(e)
+            print(f"Gemini API Error (attempt {attempt}): {error_msg}")
+
+            # リトライ対象のエラー（503 Unavailable, 429 Too Many Requests等）か判定
+            # ※必要に応じて条件を追加・変更してください
+            is_retriable = any(code in error_msg for code in ["503", "429", "UNAVAILABLE"])
+
+            if not is_retriable:
+                # 認証エラー(401)やリクエスト不正(400)などは即座に終了する
+                raise HTTPException(status_code=500, detail="AIの応答取得に失敗しました．")
+
+            if attempt == max_attempts:
+                # 最大試行回数に達した場合はエラーを投げる
+                raise HTTPException(status_code=500, detail="AIサーバーが混雑しています．時間をおいて再度お試しください．")
+
+            # エクスポネンシャルバックオフ + ジッターによる待機
+            jitter = random.uniform(0.001, 1.0)
+            delay = base_delay * (2 ** (attempt - 1)) + jitter
+            print(f"Retrying in {delay:.3f}s...")
+            await asyncio.sleep(delay)
 
 
 async def call_llm_api_for_analyze(interview_content: str) -> dict:
@@ -135,3 +171,35 @@ async def call_llm_api_for_analyze(interview_content: str) -> dict:
     except Exception as e:
         print(f"Analysis Error: {e}")
         return {"title": "分析エラー", "feedback": [{"subject": "エラー", "contents": "分析に失敗しました．", "average": 0}]}
+
+import json
+# import openai # 実際のプロジェクト環境に合わせてLLMクライアントをインポートしてください
+
+async def analyze_interview_history(entries: list) -> dict:
+    """
+    面接の対話履歴から自己分析データを抽出する関数
+    """
+    # 対話履歴を一つのテキストにまとめる
+    history_text = "\n".join(
+        [f"ユーザー: {entry.content}\n面接官(LLM): {entry.llm_response}" for entry in entries]
+    )
+    
+    prompt = f"""
+    以下の面接の対話履歴を分析し，自己PRに繋がるエピソードを一つ取り上げ自己分析マップを作成するためのデータを抽出してください．
+    出力は必ず以下のJSONスキーマに従ってください．
+
+    【対話履歴】
+    {history_text}
+    """
+
+    # ここにLLMへのAPIリクエスト処理を実装します
+    
+    response = await client.aio.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=prompt,
+        config={'response_mime_type': 'application/json',
+                'response_schema': SelfAnalysisSchema,
+                'temperature': 0.7
+                }
+    )
+    return json.loads(response.text)

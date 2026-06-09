@@ -72,9 +72,61 @@ async def process_db_data(request: Request,
     return {"status": "success", "session_id": session_id, "title": generated_title}
 
 
+## 再分析（既存のFeedbackを更新する）
+@router.put("/api/process-db-data/{session_id}/update")
+@limiter.limit("5/minute")
+async def update_process_db_data(request: Request,
+                                 session_id: str,
+                                 current_user: str = Depends(get_current_user),
+                                 db: Session = Depends(get_db)):
+    request.state.user = current_user
+    records = db.query(InterviewEntry).filter(InterviewEntry.session_id == session_id).order_by(InterviewEntry.id).all()
+    if not records:
+        raise HTTPException(status_code=404, detail="指定されたセッションのデータが見つかりません．")
+
+    history_text = ""
+    for i, r in enumerate(records):
+        history_text += f"【ターン{i+1}】\n"
+        history_text += f"応募者: {r.content}\n"
+        history_text += f"面接官: {r.llm_response}\n\n"
+
+    analysis_result = await call_llm_api_for_analyze(history_text)
+
+    generated_title = analysis_result.get("title", "無題の面接対策")
+    feedback_list = analysis_result.get("feedback", [])
+
+    # 既存のFeedbackがあれば更新、なければ新規作成
+    existing = db.query(Feedback).filter(Feedback.session_id == session_id).first()
+    if existing:
+        existing.title = generated_title
+        existing.created_at = datetime.now()
+        existing.source_data = history_text
+        existing.llm_response = ""
+        existing.feedback = json.dumps(feedback_list, ensure_ascii=False)
+        db.commit()
+        db.refresh(existing)
+        return {"status": "updated", "session_id": session_id, "title": generated_title}
+    else:
+        new_record = Feedback(
+            session_id=session_id,
+            title=generated_title,
+            created_at=datetime.now(),
+            source_data=history_text,
+            llm_response="",
+            feedback=json.dumps(feedback_list, ensure_ascii=False)
+        )
+        db.add(new_record)
+        db.commit()
+        db.refresh(new_record)
+        return {"status": "created", "session_id": session_id, "title": generated_title}
+
+
 ##結果を表示するためにタイトル，分析データ，チャットを返す関数．
 @router.get("/api/feedback/{session_id}")
-def get_feedback(session_id: str, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def get_feedback(request: Request, session_id: str, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    # set user on request so limiter key_func can use it
+    request.state.user = current_user
     rec = db.query(Feedback).filter(Feedback.session_id == session_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="指定されたフィードバックが見つかりません．")
@@ -100,7 +152,10 @@ def get_feedback(session_id: str, db: Session = Depends(get_db)):
 
 ##ページ読み込み時に履歴一覧をナビゲーションバーに表示するための関数
 @router.get("/api/history")
-def get_history(db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def get_history(request: Request, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    # ensure request.state.user is set for limiter
+    request.state.user = current_user
     results = db.query(Feedback.session_id, Feedback.title, Feedback.created_at).order_by(desc(Feedback.created_at)).all()
     history_data = [
         {"id": r.session_id, "title": r.title, "date": r.created_at.strftime("%Y/%m/%d %H:%M")} for r in results

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, FastAPI, HTTPException, status
+from fastapi import APIRouter, FastAPI, HTTPException, status, Request
 from pydantic import BaseModel
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta, timezone
 import jwt
+from core.limiter import limiter
 
 # ※ create_access_token 関数は前回の実装をそのまま使います
 
@@ -30,7 +31,8 @@ def create_access_token(data: dict, expires_delta: timedelta):
     return encoded_jwt
 
 @router.post("/auth/google")
-async def verify_google_token(request_body: GoogleTokenRequest):
+@limiter.limit("5/minute")
+async def verify_google_token(request: Request, request_body: GoogleTokenRequest):
     try:
         # Googleの公開鍵を自動取得して，IDトークンを暗号学的に検証します
         idinfo = id_token.verify_oauth2_token(

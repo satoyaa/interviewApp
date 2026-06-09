@@ -41,13 +41,6 @@ def init_db(db: Session = Depends(get_db)):
         db.commit()
     return {"message": "interview_entries に初期データを追加しました．"}
 
-
-@router.get("/api/data1")
-def get_data_from_db1(db: Session = Depends(get_db)):
-    data = db.query(InterviewEntry).all()
-    return {"data": [{"id": d.id, "content": d.content} for d in data]}
-
-
 @router.post("/api/process-prompt")
 @limiter.limit("5/minute")
 async def process_prompt(
