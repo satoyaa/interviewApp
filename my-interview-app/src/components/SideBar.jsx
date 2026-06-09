@@ -16,8 +16,8 @@ const SideBar = ({setPage}) => {
             </button>
             <div id="sideBar" className={isOpen ? 'isOpen' : ''}>
                 <ul className={isOpen ? 'sidebar isOpen' : 'sidebar'}>
-                <li role="button" style={{ cursor: 'pointer' }} onClick={() => setPage("interviewTraining")}>面接対策を始める</li>
-                <li role="button" style={{ cursor: 'pointer' }} onClick={() => setPage("selfAnalysis")}>自己分析をする</li>
+                <li role="button" onClick={() => setPage("interviewTraining")}>面接対策を始める</li>
+                <li role="button" onClick={() => setPage("selfAnalysis")}>自己分析をする</li>
                 <li role="button" className="noHover" onClick={() => {setPage("history")}}>
                     <HistoryNavigation></HistoryNavigation>
                 </li>

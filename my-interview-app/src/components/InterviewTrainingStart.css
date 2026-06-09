@@ -4,7 +4,10 @@
     width: 80%;
     display: flex;
     margin: auto;
+    margin-top: 12px;
     border-radius: 25px;
+    border-radius: 16px;
+    box-shadow: inset 0 8px 16px rgba(0,0,0,0.12), inset 0 -3px 6px rgba(255,255,255,0.6);
 }
 
 .select_items{
@@ -29,6 +32,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    
 }
 
 /* リスト全体のデフォルトの余白や黒丸を消す */
@@ -55,7 +59,9 @@
 .selected_item{
     display: flex;
     align-items: center; /* 縦の配置を中央に揃える */
-    gap: 16px; /* 各要素（ボタンや文字）の間に均等な隙間を空ける */
+    gap: 8px; /* 各要素（ボタンや文字）の間に均等な隙間を空ける */
+    cursor: grab;
+    user-select: none;
     
     -webkit-appearance: none;
     appearance: none;
@@ -72,6 +78,10 @@
     font-weight: 600;
 }
 
+.itemName {
+  flex-grow: 1;
+}
+
 .add_button {
     align-items: center;
     justify-content: center;
@@ -86,9 +96,6 @@
     border-radius: 999px; /* 角丸にする */
 }
 
-/* -------------------------------------
-   ここからボタンや操作エリアのスタイル追加
-------------------------------------- */
 
 /* +-と数値のエリア */
 .count-controls {
@@ -139,9 +146,7 @@
     opacity: 0.7;
 }
 
-/* 上下矢印ボタン と +-ボタンを丸くする */
-.up_button, /* ^ボタン */
-.down_button, /* vボタン */
+/* +-ボタンを丸くする */
 .count-controls button {
     width: 32px;
     height: 32px;
@@ -162,4 +167,72 @@
 
 .delete_button:hover:not(:disabled) {
     background-color: #fecaca;
+}
+
+/* Responsive: stack select_screen above select_items on small screens */
+@media (max-width: 480px) {
+    .select_area{
+        flex-direction: column;
+        height: auto;
+        width: 80%;
+        padding: 12px;
+        gap: 12px;
+    }
+
+    /* show select_screen first */
+    .select_screen{
+        order: -1;
+        width: 100%;
+        height: 40vh;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        margin: 0;
+    }
+
+    .select_items{
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        order: 1;
+        margin: 0;
+        padding: 8px 6px;
+    }
+
+    /* 横並びにするための内側のUL */
+    .select_items > ul{
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        align-items: center;
+    }
+
+    /* select_items 内の各項目を横並び向けに調整 */
+    .select_items .select_item{
+        margin: 6px 8px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* 横スクロール用のスクロールバー高さ */
+    .select_items::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .select_list{
+        align-items: stretch;
+        height: auto;
+        max-height: 300px;
+    }
+
+    .selected_item{
+        width: 100%;
+        padding: 10px 16px;
+        box-sizing: border-box;
+        margin: 8px 0;
+    }
 }

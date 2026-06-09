@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ResultVisual from "./ResultVisual";
+import "./InterviewTrainingResult.css";
 
 const InterviewTrainingResult = ({ sessionID, setInterviewTrainingState }) => {
     // 取得したデータを管理するためのState
@@ -21,7 +22,16 @@ const InterviewTrainingResult = ({ sessionID, setInterviewTrainingState }) => {
             try {
                 // バックエンドから分析結果を取得
                 console.log("分析結果を取得します3")
-                const response = await fetch(`http://127.0.0.1:8000/api/feedback/${sessionID}`);
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('ログインが必要です．');
+                    setIsLoading(false);
+                    return;
+                }
+
+                const response = await fetch(`http://127.0.0.1:8000/api/feedback/${sessionID}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (!response.ok) {
                     throw new Error("結果の取得に失敗しました．");
                 }
@@ -71,7 +81,7 @@ const InterviewTrainingResult = ({ sessionID, setInterviewTrainingState }) => {
     // データ取得中の表示
     if (isLoading) {
         return (
-            <div style={{ textAlign: "center", marginTop: "50px" }}>
+            <div className="interviewTrainingResultLoading">
                 <h2>分析結果を読み込んでいます...</h2>
             </div>
         );
@@ -79,7 +89,7 @@ const InterviewTrainingResult = ({ sessionID, setInterviewTrainingState }) => {
 
     return(
         <section className="interviewTrainingResult">
-        <button onClick={() => {setInterviewTrainingState("start")}} style={{ marginLeft: "20px" }}>
+        <button onClick={() => {setInterviewTrainingState("start")}} className="backButton">
             スタート画面に戻る
         </button>
         {/* Stateに保存されたデータを ResultVisual に渡す */}

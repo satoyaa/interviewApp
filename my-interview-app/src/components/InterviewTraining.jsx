@@ -15,6 +15,18 @@ const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurre
     const [countAnswer, setCountAnswer] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
 
+    const resetToStart = () => {
+        // reset local and parent states to initial values
+        setIsLoading(false);
+        setCompany("");
+        setInterviewPhase(0);
+        setSelected([]);
+        setCurrentQuestion("");
+        setCountAnswer(1);
+        setQuestionAnswerState("question");
+        setInterviewTrainingState("start");
+    };
+
     const handleFinishTraining = async () => {
         if (!sessionID) {
             alert("セッションIDが存在しません．");
@@ -24,8 +36,18 @@ const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurre
         setIsLoading(true);
         try {
             // バックエンドに分析要求を送信
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('ログインが必要です．');
+                setIsLoading(false);
+                return;
+            }
+
             const response = await fetch(`http://127.0.0.1:8000/api/process-db-data/${sessionID}`, {
-                method: "POST"
+                method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             
             if (!response.ok) {
@@ -42,8 +64,9 @@ const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurre
             
         } catch (error) {
             console.error("エラー:", error);
-            setIsLoading(false);
             alert("分析処理中にエラーが発生しました．");
+            // 通信エラーが発生した場合は開始画面に戻して状態を初期化
+            resetToStart();
         }
     };
 
@@ -55,7 +78,7 @@ const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurre
                 ></InterviewTrainingQuestion>)
         }
         if(questionAnswerState === "answer"){
-            return(<InterviewTrainingAnswer 
+                return(<InterviewTrainingAnswer 
                 setQuestionAnswerState={setQuestionAnswerState}
                 countAnswer={countAnswer} 
                 setCountAnswer={setCountAnswer} 
@@ -69,6 +92,7 @@ const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurre
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
                 handleFinishTraining={handleFinishTraining}
+                onCommunicationError={resetToStart}
                 ></InterviewTrainingAnswer>)
         }
     }

@@ -1,0 +1,70 @@
+.selfAnalysisHeader{
+    height: 15vh;
+}
+
+.flowChartWrapper {
+  width: 100%;
+  height: 85vh;
+  background-color: #f8fafc;
+}
+
+/* React Flow node styling to match the flowchart image */
+.flowChartWrapper .react-flow__node {
+  box-shadow: none;
+  font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Default node appearance (used for center, child, grandchild) */
+.flowChartWrapper .react-flow__node-default {
+  border: 2px solid transparent;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.08);
+}
+
+/* Center (episode) node larger, dark background already set inline but ensure typography */
+.flowChartWrapper .react-flow__node[data-id="center"] .react-flow__node-body {
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+/* Child nodes (category titles) styling */
+.flowChartWrapper .react-flow__node[data-id^="think"],
+.flowChartWrapper .react-flow__node[data-id^="gain"],
+.flowChartWrapper .react-flow__node[data-id^="learn"],
+.flowChartWrapper .react-flow__node[data-id^="why"],
+.flowChartWrapper .react-flowWrapper .react-flow__node[data-id^="appeal"],
+.flowChartWrapper .react-flow__node[data-id^="contribution"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Grandchild nodes (detail boxes) */
+.flowChartWrapper .react-flow__node[id*="-"] {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+/* Make node labels wrap and center where needed */
+.flowChartWrapper .react-flow__node .react-flow__node-label {
+  white-space: normal;
+  text-align: center;
+}
+
+/* Edge styling */
+.flowChartWrapper .react-flow__edge-path {
+  stroke: #94a3b8 !important;
+  stroke-width: 2px !important;
+}
+
+/* Remove default background grid look for a cleaner visual */
+.flowChartWrapper .react-flow__attribution,
+.flowChartWrapper .react-flow__background {
+  opacity: 0.6;
+}
+
+/* Responsive tweaks */
+@media (max-width: 1000px) {
+  .flowChartWrapper { height: 70vh; }
+  .flowChartWrapper .react-flow__node[data-id="center"] .react-flow__node-body { font-size: 14px; }
+}

@@ -1,0 +1,22 @@
+.interviewTrainingResultLoading {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.backButton {
+  margin-left: 20px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(16,24,40,0.12);
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  background: #f8fafc;
+}
+
+.interviewTrainingResult {
+  height: 100vh;
+  overflow-y: auto;
+}

@@ -25,75 +25,12 @@
 
 }
 
-.sidebar{
-  display: none;
-}
-
-.sidebar.isOpen{
-  display: block;
-}
-
-@media screen and (max-width: 480px) {
-  #sideBar{
-    display: none;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    z-index: 1;
-  }
-  .hamburgerButton{
-    display: block;
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 2;
-  }
-  #sideBar.isOpen{
-    display: block;
-  }
-}
 
 #contentsArea{
   flex-grow: 1;
 }
 
-.hamburgerButton{
-}
 
-
-.result_top_area{
-  display: flex;
-  place-content: center;
-  place-items: center;
-}
-
-.radarChart{
-  width: 600px;
-}
-
-.result_bottom_area{
-  display: flex;
-  place-content: start;
-  place-items: start;
-}
-
-.interviewTrainingResult{
-  height: 100vh;
-  overflow-y: auto;
-}
-
-@media screen and (max-width: 480px) {
-  .radarChart{
-    width: 100%;
-    max-width: 420px;
-    
-  }
-}
-
-.historyArea{
-  height: 100vh;
-  overflow-y: auto;
-}
 
 button {
   /* 1. デフォルトのスタイルを消す */

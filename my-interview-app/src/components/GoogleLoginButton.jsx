@@ -1,4 +1,5 @@
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import './GoogleLoginButton.css';
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 const GoogleLoginButton = ({navigate}) => {
@@ -27,7 +28,6 @@ const GoogleLoginButton = ({navigate}) => {
       localStorage.setItem('token', data.access_token);
       // アラートの代わりに，Top画面（"/"）へ遷移させる
       navigate('/'); 
-      alert('Googleログインに成功しました！');
 
     } catch (error) {
       alert(error.message);
@@ -37,7 +37,7 @@ const GoogleLoginButton = ({navigate}) => {
   return (
     // clientIdにはGoogle Cloud Consoleで取得した文字列を入れます
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
+      <div className="googleLoginContainer">
         <GoogleLogin
           onSuccess={handleSuccess}
           onError={() => {

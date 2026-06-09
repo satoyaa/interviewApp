@@ -34,11 +34,6 @@ function SortableItem(props) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    cursor:'grab',
-    userSelect: 'none'
   };
 
   return (
@@ -172,6 +167,7 @@ const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, 
 
     return(
         <section className="training">
+            <h2>対策項目を選んでください</h2>
             <div className="select_area">
                 <div className="select_items">
                     <ul>
@@ -196,7 +192,8 @@ const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, 
                             <ul className="select_list">
                                 {selected.map((item, idx) => (
                                     <SortableItem key={item.id} id={item.id} className="selected_item">
-                                        <span style={{ flexGrow: 1 }}>{item.name}</span>
+                                        <span>Phase {idx+1}</span>
+                                        <span className="itemName">{item.name}</span>
                                         <div className="count-controls">
                                             <button 
                                                 type="button" 

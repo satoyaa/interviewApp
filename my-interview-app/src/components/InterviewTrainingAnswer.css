@@ -1,0 +1,15 @@
+.answerTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  color: #0f172a;
+  background: #ffffff;
+  font-size: 15px;
+}
+
+.microphoneWrapper {
+  margin-bottom: 10px;
+}

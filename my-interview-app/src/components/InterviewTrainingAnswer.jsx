@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { AiFillAudio } from "react-icons/ai";
 import { AiOutlineBorder } from "react-icons/ai";
 import { AiOutlineSend } from "react-icons/ai";
+import "./InterviewTrainingAnswer.css";
 import InterviewTrainingLoading from "./InterviewTriningLoading";
 
-const InterviewTrainingAnswer = ({setQuestionAnswerState, countAnswer, setCountAnswer, setCurrentQuestion, sessionID, setInterviewTrainingState, interviewPhase, setInterviewPhase, selected, company, setIsLoading, handleFinishTraining}) => {
+const InterviewTrainingAnswer = ({setQuestionAnswerState, countAnswer, setCountAnswer, setCurrentQuestion, sessionID, setInterviewTrainingState, interviewPhase, setInterviewPhase, selected, company, setIsLoading, handleFinishTraining, onCommunicationError}) => {
     // 確定済みの回答テキスト
     const [answer, setAnswer] = useState("");
     // 音声認識の途中経過テキスト
@@ -150,6 +151,10 @@ const InterviewTrainingAnswer = ({setQuestionAnswerState, countAnswer, setCountA
             setIsLoading(false);
             console.error("エラー:", error);
             alert("バックエンドとの通信に失敗しました．");
+            // 親コンポーネントへ通知して全状態を初期化して開始画面へ戻す
+            if (typeof onCommunicationError === 'function') {
+                onCommunicationError();
+            }
         }
     } 
 
@@ -163,7 +168,7 @@ const InterviewTrainingAnswer = ({setQuestionAnswerState, countAnswer, setCountA
                 rows={4} 
                 maxLength={2000} 
                 placeholder="ここに回答を入力してください（Enterで改行）" 
-                style={{ width: '100%', boxSizing: 'border-box' }}
+                className="answerTextarea"
             />
             {isInput && !isRecording ? 
             <button
@@ -172,7 +177,7 @@ const InterviewTrainingAnswer = ({setQuestionAnswerState, countAnswer, setCountA
                 className="circle_button submit_button"
             ><AiOutlineSend /></button>
             :
-            <div style={{ marginBottom: '10px' }}>
+            <div className="microphoneWrapper">
                 <button 
                     type="button" 
                     onClick={toggleRecording} 

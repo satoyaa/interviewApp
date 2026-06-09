@@ -1,5 +1,6 @@
 import ResultVisual from "./ResultVisual";
 import HistoryAnalyzeAgain from "./HistoryAnalyzeAgain.jsx";
+import './HistoryArea.css';
 
 import { AppContext} from './Context/Context.jsx';
 import { useState, useContext, useEffect } from "react";
@@ -27,7 +28,16 @@ const HistoryArea = () => {
             try {
                 // バックエンドから分析結果を取得
                 console.log("分析結果を取得します3")
-                const response = await fetch(`http://127.0.0.1:8000/api/feedback/${history_ID}`);
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('ログインが必要です．');
+                    setIsLoading(false);
+                    return;
+                }
+
+                const response = await fetch(`http://127.0.0.1:8000/api/feedback/${history_ID}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (!response.ok) {
                     throw new Error("結果の取得に失敗しました．");
                 }
@@ -83,7 +93,7 @@ const HistoryArea = () => {
     // データ取得中の表示
     if (isLoading) {
         return (
-            <div style={{ textAlign: "center", marginTop: "50px" }}>
+            <div className="historyAreaLoading">
                 <h2>分析結果を読み込んでいます...</h2>
             </div>
         );

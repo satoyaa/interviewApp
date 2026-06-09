@@ -36,7 +36,15 @@
 }
 
 .radarChart{
+  width: 600px;
   padding-top:24px; /* make space for score */
+}
+
+@media screen and (max-width: 480px) {
+  .radarChart{
+    width: 100%;
+    max-width: 420px;
+  }
 }
 
 .result_right{

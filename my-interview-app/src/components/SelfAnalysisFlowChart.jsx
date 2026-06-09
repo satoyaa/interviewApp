@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -24,9 +24,9 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 
     // ノードのID規則を使って階層を判定し，サイズを割り当てる
     if (node.id === 'center') {
-      // 親（エピソード概要）: 長文用
-      width = 380;
-      height = 240;
+      // 親（エピソード概要）: 長文用 — 横幅を2倍に拡大
+      width = 640; // was 380
+      height = 320;
     } else if (!node.id.includes('-')) {
       // 子（項目名）: タイトルのみのコンパクトサイズ
       width = 180;
@@ -42,7 +42,42 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     dagreGraph.setNode(node.id, { width, height });
   });
 
+  // Build layout-only edges so that grandchildren are stacked vertically under their parent.
+  // We create a chain: parent -> gc1 -> gc2 -> gc3 ... for each parent's grandchildren.
+  const layoutEdges = [];
+  // First, add non-grandchild edges (e.g., center -> child)
   edges.forEach((edge) => {
+    if (!edge.target.includes('-')) {
+      layoutEdges.push({ source: edge.source, target: edge.target });
+    }
+  });
+
+  // Group grandchildren by parent
+  const grandchildrenByParent = {};
+  edges.forEach((edge) => {
+    if (edge.target.includes('-')) {
+      const parent = edge.source;
+      grandchildrenByParent[parent] = grandchildrenByParent[parent] || [];
+      grandchildrenByParent[parent].push(edge.target);
+    }
+  });
+
+  // For each parent, sort grandchildren (stable order preserved) and add chain edges
+  Object.keys(grandchildrenByParent).forEach((parent) => {
+    const gcs = grandchildrenByParent[parent];
+    if (gcs.length === 1) {
+      layoutEdges.push({ source: parent, target: gcs[0] });
+    } else if (gcs.length > 1) {
+      // parent -> first
+      layoutEdges.push({ source: parent, target: gcs[0] });
+      // chain first -> second -> third ... to force vertical stacking
+      for (let i = 0; i < gcs.length - 1; i++) {
+        layoutEdges.push({ source: gcs[i], target: gcs[i + 1] });
+      }
+    }
+  });
+
+  layoutEdges.forEach((edge) => {
     dagreGraph.setEdge(edge.source, edge.target);
   });
 
@@ -74,12 +109,24 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 };
 
 const SelfAnalysisFlowChart = ({rawNodes, rawEdges}) => {
+  // 1. 依存配列に rawNodes と rawEdges を追加し，データ到着時に再計算させる
   const { layoutedNodes, layoutedEdges } = useMemo(() => {
+    // データがまだ無い場合は空配列を返すガード処理
+    if (!rawNodes || rawNodes.length === 0) {
+      return { layoutedNodes: [], layoutedEdges: [] };
+    }
     return getLayoutedElements(rawNodes, rawEdges, 'TB');
-  }, []);
+  }, [rawNodes, rawEdges]);
 
+  // 初期値として設定
   const [nodes, setNodes] = useState(layoutedNodes);
   const [edges, setEdges] = useState(layoutedEdges);
+
+  // 2. layoutedNodes または layoutedEdges が再計算されたら，ステートを更新して再描画する
+  useEffect(() => {
+    setNodes(layoutedNodes);
+    setEdges(layoutedEdges);
+  }, [layoutedNodes, layoutedEdges]);
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -92,7 +139,7 @@ const SelfAnalysisFlowChart = ({rawNodes, rawEdges}) => {
   );
 
   return (
-    <div style={{ width: '100%', height: '100vh', backgroundColor: '#f8fafc' }}>
+    <div className="flowChartWrapper">
       <ReactFlow
         nodes={nodes}
         edges={edges}
