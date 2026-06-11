@@ -3,6 +3,9 @@ import { AppContext } from './components/Context/Context.jsx';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Top from './pages/Top';
+import InterviewTrainingArea from './components/InterviewTrainingArea';
+import SelfAnalysis from './components/SelfAnalysis';
+import HistoryArea from './components/HistoryArea';
 
 import './App.css';
 
@@ -36,7 +39,13 @@ function App() {
                 <Top />
               </ProtectedRoute>
             } 
-          />
+          >
+            <Route index element={<Navigate to="interviewTraining" replace />} />
+            <Route path="interviewTraining" element={<InterviewTrainingArea />} />
+            <Route path="selfAnalysis" element={<SelfAnalysis />} />
+            <Route path="historyArea" element={<HistoryArea />} />
+            <Route path="historyArea/:historyId" element={<HistoryArea />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </AppContext.Provider>

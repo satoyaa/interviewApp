@@ -1,4 +1,5 @@
-import { use, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { NavLink, useNavigate } from 'react-router-dom'
 
 import {AppContext} from './Context/Context.jsx'
 
@@ -44,12 +45,19 @@ const HistoryNavigation = () => {
         fetchHistory();
     }, []); // 依存配列を空にして，初回のみ実行されるようにします．
 
+    const navigate = useNavigate();
+
+    const handleClick = (id) => {
+        setHistory_ID(id);
+        navigate(`/historyArea/${id}`);
+    }
+
     return (
         <>
-        <h3>過去の面接対策の結果</h3>
+        <h3><NavLink to="/historyArea">過去の面接対策の結果</NavLink></h3>
         <ul>
             {histories.map((history) => (
-                <li className="historyNavigation" key={history.id} onClick={() => setHistory_ID(history.id)}> {/* keyにはidを使用します． */}
+                <li className="historyNavigation" key={history.id} onClick={() => handleClick(history.id)}> {/* keyにはidを使用します． */}
                     {history.title}
                 </li>
             ))}

@@ -4,6 +4,7 @@ import './HistoryArea.css';
 
 import { AppContext} from './Context/Context.jsx';
 import { useState, useContext, useEffect } from "react";
+import { useParams } from 'react-router-dom'
 
 const HistoryArea = () => {
     // 取得したデータを管理するためのState
@@ -12,6 +13,7 @@ const HistoryArea = () => {
     const [title, setTitle] = useState("無題のタイトル");
     const [isLoading, setIsLoading] = useState(true);
     const {history_ID, setHistory_ID} = useContext(AppContext);
+    const { historyId } = useParams();
     const [chatData, setChatData] = useState([]);
     
 
@@ -19,11 +21,18 @@ const HistoryArea = () => {
         console.log("分析結果を取得します1")
         const fetchResult = async () => {
             console.log("分析結果を取得します2")
-            // history_IDが渡されていない場合は処理を中断
-            if (!history_ID) {
-                setIsLoading(false);
-                return;
-            }
+                // ルートパラメータがあれば優先して使用
+                const effectiveId = historyId || history_ID;
+                // history_IDが渡されていない場合は処理を中断
+                if (!effectiveId) {
+                    setIsLoading(false);
+                    return;
+                }
+
+                // params に基づき context を更新
+                if (historyId && historyId !== history_ID) {
+                    setHistory_ID(historyId);
+                }
 
             try {
                 // バックエンドから分析結果を取得
@@ -35,7 +44,7 @@ const HistoryArea = () => {
                     return;
                 }
 
-                const response = await fetch(`http://127.0.0.1:8000/api/feedback/${history_ID}`, {
+                const response = await fetch(`http://127.0.0.1:8000/api/feedback/${effectiveId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) {
@@ -88,7 +97,7 @@ const HistoryArea = () => {
         };
 
         fetchResult();
-    }, [history_ID]); // history_ID が変更された時（初回マウント時含む）に実行
+    }, [history_ID, historyId]); // history_ID または route param が変更された時に実行
 
     // データ取得中の表示
     if (isLoading) {
@@ -101,7 +110,7 @@ const HistoryArea = () => {
 
     return (
         <section className="historyArea">
-        <HistoryAnalyzeAgain history_ID={history_ID}></HistoryAnalyzeAgain>
+        <HistoryAnalyzeAgain history_ID={historyId || history_ID}></HistoryAnalyzeAgain>
         <ResultVisual score={scoreData} feedback={feedbackData} title={title} chatData={chatData}></ResultVisual>
         </section>
     )
