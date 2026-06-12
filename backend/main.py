@@ -2,8 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Import database and models so SQLAlchemy knows about table definitions
-import database
-import models
+from db import database, models
 
 from routers.interview import router as interview_router
 from routers.analysis import router as analysis_router

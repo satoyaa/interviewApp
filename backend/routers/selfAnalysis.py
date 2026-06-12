@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
-from database import get_db
-from models import InterviewEntry, SelfAnalysis, InterviewSession, User
+from db.database import get_db
+from db.models import InterviewEntry, SelfAnalysis, InterviewSession, User
 from services.llm import analyze_interview_history
+from core.auth import get_current_user
 from core.limiter import limiter
 
 router = APIRouter(
@@ -19,13 +20,18 @@ async def generate_self_analysis(
     request: Request,
     limit: int = Query(default=10, description="分析対象とする最新の面接件数"), 
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     これまでのすべての面接から最新の〇件を取得し，LLMで分析して保存する
     """
+    request.state.user = current_user.auth_provider_id
+
     # 最新のid順（降順）で指定件数を取得
+    # Multi-tenancy: filter by user_id
     entries = (
         db.query(InterviewEntry)
+        .filter(InterviewEntry.user_id == current_user.id)
         .order_by(InterviewEntry.id.desc())
         .limit(limit)
         .all()
@@ -41,24 +47,22 @@ async def generate_self_analysis(
     analysis_data = await analyze_interview_history(entries)
     print(analysis_data)
 
-    # 全体分析用のレコードを検索
-    # Ensure a placeholder InterviewSession exists for the global analysis identifier
-    session_placeholder = db.query(InterviewSession).filter(InterviewSession.id == GLOBAL_ANALYSIS_ID).first()
+    # 全体分析用のレコードを検索 (User-specific)
+    session_placeholder = db.query(InterviewSession).filter(
+        InterviewSession.id == GLOBAL_ANALYSIS_ID,
+        InterviewSession.user_id == current_user.id
+    ).first()
+    
     if not session_placeholder:
-        # Ensure a system user exists to own this placeholder session
-        system_user = db.query(User).filter(User.auth_provider_id == "__system__").first()
-        if not system_user:
-            system_user = User(auth_provider_id="__system__")
-            db.add(system_user)
-            db.commit()
-            db.refresh(system_user)
-
-        session_placeholder = InterviewSession(id=GLOBAL_ANALYSIS_ID, user_id=system_user.id, company_name="__global__")
+        session_placeholder = InterviewSession(id=GLOBAL_ANALYSIS_ID, user_id=current_user.id, company_name="__global__")
         db.add(session_placeholder)
         db.commit()
         db.refresh(session_placeholder)
 
-    db_analysis = db.query(SelfAnalysis).filter(SelfAnalysis.session_id == GLOBAL_ANALYSIS_ID).first()
+    db_analysis = db.query(SelfAnalysis).filter(
+        SelfAnalysis.session_id == GLOBAL_ANALYSIS_ID,
+        SelfAnalysis.user_id == current_user.id
+    ).first()
     
     if db_analysis:
         db_analysis.episode_summary = analysis_data["episode_summary"]
@@ -71,6 +75,7 @@ async def generate_self_analysis(
     else:
         db_analysis = SelfAnalysis(
             session_id=GLOBAL_ANALYSIS_ID, # 固定の識別子で保存
+            user_id=current_user.id,
             episode_summary=analysis_data["episode_summary"],
             think_list=analysis_data["think_list"],
             gain_list=analysis_data["gain_list"],
@@ -87,12 +92,21 @@ async def generate_self_analysis(
 
 @router.get("/graph-data")
 @limiter.limit("10/minute")
-def get_graph_data(request: Request, db: Session = Depends(get_db)):
+def get_graph_data(
+    request: Request, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """
     全体分析の結果から rawNodes と dynamicEdges を生成して返す
     """
-    # 固定の識別子でデータを取得
-    analysis = db.query(SelfAnalysis).filter(SelfAnalysis.session_id == GLOBAL_ANALYSIS_ID).first()
+    request.state.user = current_user.auth_provider_id
+
+    # 固定の識別子とユーザーIDでデータを取得
+    analysis = db.query(SelfAnalysis).filter(
+        SelfAnalysis.session_id == GLOBAL_ANALYSIS_ID,
+        SelfAnalysis.user_id == current_user.id
+    ).first()
     if not analysis:
         raise HTTPException(status_code=404, detail="分析データが見つかりません．先に分析を実行してください．")
 

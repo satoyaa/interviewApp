@@ -1,37 +1,14 @@
 from fastapi import APIRouter, Depends, Request, File, Form, HTTPException
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordBearer
 import uuid
-from database import get_db
-from models import InterviewEntry, InterviewSession, User
+from db.database import get_db
+from db.models import InterviewEntry, InterviewSession, User
 from services.llm import call_llm_api
 from typing import Optional
-import jwt
-from dotenv import load_dotenv
-import os
+from core.auth import get_current_user
 from core.limiter import limiter
 
 router = APIRouter()
-
-load_dotenv()
-
-SECRET_KEY = os.environ.get("SECRET_KEY")
-ALGORITHM = os.environ.get("ALGORITHM")
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
-    try:
-        # トークンを解読（検証）する
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        # /auth/google で設定した "sub" (メールアドレス) を取り出す
-        email: str = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="無効なトークンです")
-        return email
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="トークンの検証に失敗しました")
-
 
 @router.post("/init-db")
 def init_db(db: Session = Depends(get_db)):
@@ -53,6 +30,7 @@ def init_db(db: Session = Depends(get_db)):
 
         sample_entry = InterviewEntry(
             session_id=session.id,
+            user_id=user.id,
             question_text="",
             answer_text="これはデータベース1に保存されている初期データです．"
         )
@@ -64,8 +42,8 @@ def init_db(db: Session = Depends(get_db)):
 @limiter.limit("5/minute")
 async def process_prompt(
     request: Request,
-    # user認証
-    current_user: str = Depends(get_current_user),
+    # user認証 (直接 User オブジェクトを受け取る)
+    current_user: User = Depends(get_current_user),
     
     session_id: Optional[str] = Form(None, description="一時ID"),
     # max_length で文字列の長さを制限 (URLや会社名を想定し521と少し長めに設定)
@@ -82,7 +60,7 @@ async def process_prompt(
     reset: Optional[bool] = Form(False, description="リセットフラグ"),
 ):
     
-    request.state.user = current_user
+    request.state.user = current_user.auth_provider_id
     if not text_prompt and not company_info and not phase:
         raise HTTPException(status_code=400, detail="面接設定，または回答データを送信してください．")
     
@@ -90,26 +68,22 @@ async def process_prompt(
     if text_prompt:
         user_input = text_prompt
 
-    # Find or create user based on current_user identifier
-    user = db.query(User).filter(User.auth_provider_id == current_user).first()
-    if not user:
-        user = User(auth_provider_id=current_user)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-
     # session_id is expected to be an InterviewSession.id (UUID). If not provided, create a new session.
     if not session_id:
-        interview_session = InterviewSession(user_id=user.id, company_name=company_info or "未指定")
+        interview_session = InterviewSession(user_id=current_user.id, company_name=company_info or "未指定")
         db.add(interview_session)
         db.commit()
         db.refresh(interview_session)
         session_id = interview_session.id
     else:
         # try to find existing session; if not found, create one using provided id
-        interview_session = db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
+        # Multi-tenancy: filter by user_id
+        interview_session = db.query(InterviewSession).filter(
+            InterviewSession.id == session_id,
+            InterviewSession.user_id == current_user.id
+        ).first()
         if not interview_session:
-            interview_session = InterviewSession(id=session_id, user_id=user.id, company_name=company_info or "未指定")
+            interview_session = InterviewSession(id=session_id, user_id=current_user.id, company_name=company_info or "未指定")
             db.add(interview_session)
             db.commit()
             db.refresh(interview_session)
@@ -168,6 +142,7 @@ async def process_prompt(
     # Create interview entry using new column names
     new_record = InterviewEntry(
         session_id=interview_session.id,
+        user_id=current_user.id,
         question_text=llm_result,
         answer_text=save_content
     )

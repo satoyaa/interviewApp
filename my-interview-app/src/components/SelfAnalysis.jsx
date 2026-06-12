@@ -88,14 +88,18 @@ const SelfAnalysis = () => {
   const HandleGetSelfAnalysis = async () => {
     try {
       // URLから sessionId を排除しました
-      const response = await fetch(`http://localhost:8000/self-analysis/graph-data`);
+      const token = localStorage.getItem("token"); 
+      const response = await fetch(`http://localhost:8000/self-analysis/graph-data`, {
+        headers: {
+        "Authorization": `Bearer ${token}` // ヘッダを追加
+        }
+      });
       if (!response.ok) {
         throw new Error('データの取得に失敗しました．');
       }
       const data = await response.json();
       
       const formattedNodes = formatNodes(data.rawNodes);
-      console.log(formattedNodes);
       setNodes(formattedNodes);
       setEdges([...fixedEdges, ...data.dynamicEdges]);
     } catch (error) {
@@ -107,10 +111,14 @@ const SelfAnalysis = () => {
   const HandleRequestSelfAnalysis = async () => {
     setIsLoading(true);
     try {
-      // クエリパラメータで limit 件数を渡すように変更しました
-      const response = await fetch(`http://localhost:8000/self-analysis/analyze?limit=${interviewLimit}`, {
-        method: 'POST',
-      });
+          const token = localStorage.getItem("token"); // トークンを取得
+          // クエリパラメータで limit 件数を渡すように変更しました
+          const response = await fetch(`http://localhost:8000/self-analysis/analyze?limit=${interviewLimit}`, {
+            method: 'POST',
+            headers: {
+              "Authorization": `Bearer ${token}` // ヘッダを追加
+            }
+          });
       if (!response.ok) {
         throw new Error('分析リクエストに失敗しました．');
       }

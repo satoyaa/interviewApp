@@ -1,5 +1,6 @@
-from fastapi import APIRouter, FastAPI, HTTPException, status, Request
+from fastapi import APIRouter, FastAPI, HTTPException, status, Request, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from dotenv import load_dotenv
@@ -7,6 +8,8 @@ import os
 from datetime import datetime, timedelta, timezone
 import jwt
 from core.limiter import limiter
+from db.database import get_db
+from db.models import User
 
 # ※ create_access_token 関数は前回の実装をそのまま使います
 
@@ -21,7 +24,7 @@ ALGORITHM = os.environ.get("ALGORITHM")
 # ReactからJSON形式で受け取るデータの型定義
 class GoogleTokenRequest(BaseModel):
     token: str
-    
+
 def create_access_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
@@ -32,7 +35,7 @@ def create_access_token(data: dict, expires_delta: timedelta):
 
 @router.post("/auth/google")
 @limiter.limit("5/minute")
-async def verify_google_token(request: Request, request_body: GoogleTokenRequest):
+async def verify_google_token(request: Request, request_body: GoogleTokenRequest, db: Session = Depends(get_db)):
     try:
         # Googleの公開鍵を自動取得して，IDトークンを暗号学的に検証します
         idinfo = id_token.verify_oauth2_token(
@@ -41,12 +44,15 @@ async def verify_google_token(request: Request, request_body: GoogleTokenRequest
 
         # 検証に成功すると，idinfo辞書からユーザー情報を安全に取得できます
         user_email = idinfo.get("email")
-        
+
         # --- ユーザー登録のロジック ---
-        # 実際のアプリでは，ここでDBを検索し，存在しなければ新規登録する処理を書きます．
-        # user = db.query(User).filter(User.email == user_email).first()
-        # if not user:
-        #     user = create_user(email=user_email)
+        # ユーザーが存在しない場合は新規作成
+        user = db.query(User).filter(User.auth_provider_id == user_email).first()
+        if not user:
+            user = User(auth_provider_id=user_email)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
 
         # アプリケーション独自のJWT（アクセストークン）を発行
         # （create_access_token関数は前回の回答で実装したものを流用します）

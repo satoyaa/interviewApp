@@ -2,47 +2,29 @@ from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 import json
-from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime
-from database import get_db
-from models import InterviewEntry, Feedback
+from db.database import get_db
+from db.models import InterviewEntry, Feedback, User
 from services.llm import call_llm_api_for_analyze
-from dotenv import load_dotenv
-import os
-import jwt
+from core.auth import get_current_user
 from core.limiter import limiter
 
 router = APIRouter()
 
-load_dotenv()
-
-SECRET_KEY = os.environ.get("SECRET_KEY")
-ALGORITHM = os.environ.get("ALGORITHM")
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
-    try:
-        # トークンを解読（検証）する
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        # /auth/google で設定した "sub" (メールアドレス) を取り出す
-        email: str = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="無効なトークンです")
-        return email
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="トークンの検証に失敗しました")
-    
 ##分析用の関数
 ##面接対策終了時と再分析要求があったときに走る
 @router.post("/api/process-db-data/{session_id}")
 @limiter.limit("5/minute")
 async def process_db_data(request: Request, 
                           session_id: str, 
-                          current_user: str = Depends(get_current_user), 
+                          current_user: User = Depends(get_current_user), 
                           db: Session = Depends(get_db)):
-    request.state.user = current_user
-    records = db.query(InterviewEntry).filter(InterviewEntry.session_id == session_id).order_by(InterviewEntry.id).all()
+    request.state.user = current_user.auth_provider_id
+
+    records = db.query(InterviewEntry).filter(
+        InterviewEntry.session_id == session_id,
+        InterviewEntry.user_id == current_user.id
+    ).order_by(InterviewEntry.id).all()
     if not records:
         raise HTTPException(status_code=404, detail="指定されたセッションのデータが見つかりません．")
 
@@ -60,6 +42,7 @@ async def process_db_data(request: Request,
     # store analysis_text as the serialized analysis_result (if any) and scores_data as JSON
     new_record = Feedback(
         session_id=session_id,
+        user_id=current_user.id,
         title=generated_title,
         analysis_text=json.dumps(analysis_result, ensure_ascii=False),
         scores_data=feedback_list,
@@ -77,10 +60,14 @@ async def process_db_data(request: Request,
 @limiter.limit("5/minute")
 async def update_process_db_data(request: Request,
                                  session_id: str,
-                                 current_user: str = Depends(get_current_user),
+                                 current_user: User = Depends(get_current_user),
                                  db: Session = Depends(get_db)):
-    request.state.user = current_user
-    records = db.query(InterviewEntry).filter(InterviewEntry.session_id == session_id).order_by(InterviewEntry.id).all()
+    request.state.user = current_user.auth_provider_id
+
+    records = db.query(InterviewEntry).filter(
+        InterviewEntry.session_id == session_id,
+        InterviewEntry.user_id == current_user.id
+    ).order_by(InterviewEntry.id).all()
     if not records:
         raise HTTPException(status_code=404, detail="指定されたセッションのデータが見つかりません．")
 
@@ -96,7 +83,10 @@ async def update_process_db_data(request: Request,
     feedback_list = analysis_result.get("feedback", [])
 
     # 既存のFeedbackがあれば更新、なければ新規作成
-    existing = db.query(Feedback).filter(Feedback.session_id == session_id).first()
+    existing = db.query(Feedback).filter(
+        Feedback.session_id == session_id,
+        Feedback.user_id == current_user.id
+    ).first()
     if existing:
         existing.title = generated_title
         existing.created_at = datetime.now()
@@ -108,6 +98,7 @@ async def update_process_db_data(request: Request,
     else:
         new_record = Feedback(
             session_id=session_id,
+            user_id=current_user.id,
             title=generated_title,
             analysis_text=json.dumps(analysis_result, ensure_ascii=False),
             scores_data=feedback_list,
@@ -122,10 +113,14 @@ async def update_process_db_data(request: Request,
 ##結果を表示するためにタイトル，分析データ，チャットを返す関数．
 @router.get("/api/feedback/{session_id}")
 @limiter.limit("10/minute")
-def get_feedback(request: Request, session_id: str, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_feedback(request: Request, session_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     # set user on request so limiter key_func can use it
-    request.state.user = current_user
-    rec = db.query(Feedback).filter(Feedback.session_id == session_id).first()
+    request.state.user = current_user.auth_provider_id
+
+    rec = db.query(Feedback).filter(
+        Feedback.session_id == session_id,
+        Feedback.user_id == current_user.id
+    ).first()
     if not rec:
         raise HTTPException(status_code=404, detail="指定されたフィードバックが見つかりません．")
     # scores_data is stored as JSON/JSONB; when using SQLite it may be a string
@@ -138,7 +133,10 @@ def get_feedback(request: Request, session_id: str, current_user: str = Depends(
         parsed = []
 
     # collect chat data (content and llm_response) from InterviewEntry for this session
-    entries = db.query(InterviewEntry).filter(InterviewEntry.session_id == session_id).order_by(InterviewEntry.id).all()
+    entries = db.query(InterviewEntry).filter(
+        InterviewEntry.session_id == session_id,
+        InterviewEntry.user_id == current_user.id
+    ).order_by(InterviewEntry.id).all()
     chat_data = [{"content": e.answer_text, "llm_response": e.question_text} for e in entries]
     print(chat_data)
 
@@ -154,10 +152,13 @@ def get_feedback(request: Request, session_id: str, current_user: str = Depends(
 ##ページ読み込み時に履歴一覧をナビゲーションバーに表示するための関数
 @router.get("/api/history")
 @limiter.limit("5/minute")
-def get_history(request: Request, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+def get_history(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     # ensure request.state.user is set for limiter
-    request.state.user = current_user
-    results = db.query(Feedback.session_id, Feedback.title, Feedback.created_at).order_by(desc(Feedback.created_at)).all()
+    request.state.user = current_user.auth_provider_id
+
+    results = db.query(Feedback.session_id, Feedback.title, Feedback.created_at).filter(
+        Feedback.user_id == current_user.id
+    ).order_by(desc(Feedback.created_at)).all()
     history_data = [
         {"id": r.session_id, "title": r.title, "date": r.created_at.strftime("%Y/%m/%d %H:%M")} for r in results
     ]
