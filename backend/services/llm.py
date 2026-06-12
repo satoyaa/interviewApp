@@ -181,7 +181,7 @@ async def analyze_interview_history(entries: list) -> dict:
     """
     # 対話履歴を一つのテキストにまとめる
     history_text = "\n".join(
-        [f"ユーザー: {entry.content}\n面接官(LLM): {entry.llm_response}" for entry in entries]
+        [f"ユーザー: {entry.answer_text}\n面接官(LLM): {entry.question_text}" for entry in entries]
     )
     
     prompt = f"""

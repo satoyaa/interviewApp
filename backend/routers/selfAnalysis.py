@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from database import get_db
-from models import InterviewEntry, SelfAnalysis
+from models import InterviewEntry, SelfAnalysis, InterviewSession, User
 from services.llm import analyze_interview_history
 from core.limiter import limiter
 
@@ -42,6 +42,22 @@ async def generate_self_analysis(
     print(analysis_data)
 
     # 全体分析用のレコードを検索
+    # Ensure a placeholder InterviewSession exists for the global analysis identifier
+    session_placeholder = db.query(InterviewSession).filter(InterviewSession.id == GLOBAL_ANALYSIS_ID).first()
+    if not session_placeholder:
+        # Ensure a system user exists to own this placeholder session
+        system_user = db.query(User).filter(User.auth_provider_id == "__system__").first()
+        if not system_user:
+            system_user = User(auth_provider_id="__system__")
+            db.add(system_user)
+            db.commit()
+            db.refresh(system_user)
+
+        session_placeholder = InterviewSession(id=GLOBAL_ANALYSIS_ID, user_id=system_user.id, company_name="__global__")
+        db.add(session_placeholder)
+        db.commit()
+        db.refresh(session_placeholder)
+
     db_analysis = db.query(SelfAnalysis).filter(SelfAnalysis.session_id == GLOBAL_ANALYSIS_ID).first()
     
     if db_analysis:

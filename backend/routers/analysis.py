@@ -49,21 +49,21 @@ async def process_db_data(request: Request,
     history_text = ""
     for i, r in enumerate(records):
         history_text += f"【ターン{i+1}】\n"
-        history_text += f"応募者: {r.content}\n"
-        history_text += f"面接官: {r.llm_response}\n\n"
+        history_text += f"応募者: {r.answer_text}\n"
+        history_text += f"面接官: {r.question_text}\n\n"
 
     analysis_result = await call_llm_api_for_analyze(history_text)
 
     generated_title = analysis_result.get("title", "無題の面接対策")
     feedback_list = analysis_result.get("feedback", [])
 
+    # store analysis_text as the serialized analysis_result (if any) and scores_data as JSON
     new_record = Feedback(
         session_id=session_id,
         title=generated_title,
-        created_at=datetime.now(),
-        source_data=history_text,
-        llm_response="",
-        feedback=json.dumps(feedback_list, ensure_ascii=False)
+        analysis_text=json.dumps(analysis_result, ensure_ascii=False),
+        scores_data=feedback_list,
+        created_at=datetime.now()
     )
     db.add(new_record)
     db.commit()
@@ -87,8 +87,8 @@ async def update_process_db_data(request: Request,
     history_text = ""
     for i, r in enumerate(records):
         history_text += f"【ターン{i+1}】\n"
-        history_text += f"応募者: {r.content}\n"
-        history_text += f"面接官: {r.llm_response}\n\n"
+        history_text += f"応募者: {r.answer_text}\n"
+        history_text += f"面接官: {r.question_text}\n\n"
 
     analysis_result = await call_llm_api_for_analyze(history_text)
 
@@ -100,9 +100,8 @@ async def update_process_db_data(request: Request,
     if existing:
         existing.title = generated_title
         existing.created_at = datetime.now()
-        existing.source_data = history_text
-        existing.llm_response = ""
-        existing.feedback = json.dumps(feedback_list, ensure_ascii=False)
+        existing.analysis_text = json.dumps(analysis_result, ensure_ascii=False)
+        existing.scores_data = feedback_list
         db.commit()
         db.refresh(existing)
         return {"status": "updated", "session_id": session_id, "title": generated_title}
@@ -110,10 +109,9 @@ async def update_process_db_data(request: Request,
         new_record = Feedback(
             session_id=session_id,
             title=generated_title,
-            created_at=datetime.now(),
-            source_data=history_text,
-            llm_response="",
-            feedback=json.dumps(feedback_list, ensure_ascii=False)
+            analysis_text=json.dumps(analysis_result, ensure_ascii=False),
+            scores_data=feedback_list,
+            created_at=datetime.now()
         )
         db.add(new_record)
         db.commit()
@@ -130,22 +128,25 @@ def get_feedback(request: Request, session_id: str, current_user: str = Depends(
     rec = db.query(Feedback).filter(Feedback.session_id == session_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="指定されたフィードバックが見つかりません．")
+    # scores_data is stored as JSON/JSONB; when using SQLite it may be a string
     try:
-        parsed = json.loads(rec.feedback)
+        if isinstance(rec.scores_data, str):
+            parsed = json.loads(rec.scores_data)
+        else:
+            parsed = rec.scores_data
     except Exception:
         parsed = []
 
     # collect chat data (content and llm_response) from InterviewEntry for this session
     entries = db.query(InterviewEntry).filter(InterviewEntry.session_id == session_id).order_by(InterviewEntry.id).all()
-    chat_data = [{"content": e.content, "llm_response": e.llm_response} for e in entries]
+    chat_data = [{"content": e.answer_text, "llm_response": e.question_text} for e in entries]
     print(chat_data)
 
     return {
         "session_id": rec.session_id,
         "title": rec.title,
         "created_at": rec.created_at.isoformat(),
-        "source_data": rec.source_data,
-        "llm_response": rec.llm_response,
+        "analysis_text": rec.analysis_text,
         "feedback": parsed,
         "chat_data": chat_data
     }

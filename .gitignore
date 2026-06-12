@@ -1,0 +1,31 @@
+# =========================
+# PostgreSQL
+# =========================
+
+# PostgreSQLのデータファイル
+data/
+
+# 念のためログファイル
+*.log
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# VSCode
+.vscode/
+
+# JetBrains
+.idea/

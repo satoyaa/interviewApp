@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
 import uuid
 from database import get_db
-from models import InterviewEntry
+from models import InterviewEntry, InterviewSession, User
 from services.llm import call_llm_api
 from typing import Optional
 import jwt
@@ -35,11 +35,30 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
 
 @router.post("/init-db")
 def init_db(db: Session = Depends(get_db)):
+    # create a sample user, session and entry if none exist
     if not db.query(InterviewEntry).first():
-        sample_data = InterviewEntry(content="これはデータベース1に保存されている初期データです．", enterprise="未指定", session_id=str(uuid.uuid4()), llm_response="")
-        db.add(sample_data)
+        # create or get a seed user
+        seed_auth = "seed@example.com"
+        user = db.query(User).filter(User.auth_provider_id == seed_auth).first()
+        if not user:
+            user = User(auth_provider_id=seed_auth)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        session = InterviewSession(user_id=user.id, company_name="未指定")
+        db.add(session)
         db.commit()
-    return {"message": "interview_entries に初期データを追加しました．"}
+        db.refresh(session)
+
+        sample_entry = InterviewEntry(
+            session_id=session.id,
+            question_text="",
+            answer_text="これはデータベース1に保存されている初期データです．"
+        )
+        db.add(sample_entry)
+        db.commit()
+    return {"message": "初期データを作成しました．"}
 
 @router.post("/api/process-prompt")
 @limiter.limit("5/minute")
@@ -71,8 +90,29 @@ async def process_prompt(
     if text_prompt:
         user_input = text_prompt
 
+    # Find or create user based on current_user identifier
+    user = db.query(User).filter(User.auth_provider_id == current_user).first()
+    if not user:
+        user = User(auth_provider_id=current_user)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    # session_id is expected to be an InterviewSession.id (UUID). If not provided, create a new session.
     if not session_id:
-        session_id = str(uuid.uuid4())
+        interview_session = InterviewSession(user_id=user.id, company_name=company_info or "未指定")
+        db.add(interview_session)
+        db.commit()
+        db.refresh(interview_session)
+        session_id = interview_session.id
+    else:
+        # try to find existing session; if not found, create one using provided id
+        interview_session = db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
+        if not interview_session:
+            interview_session = InterviewSession(id=session_id, user_id=user.id, company_name=company_info or "未指定")
+            db.add(interview_session)
+            db.commit()
+            db.refresh(interview_session)
 
     prompt_content = "あなたはプロの面接官です．以下の条件を踏まえて，応募者に面接の質問を行ってください．\n"
     if company_info:
@@ -123,12 +163,13 @@ async def process_prompt(
         save_content = f"【面接開始】企業:{company_info}, 面接フェーズ:{phase}"
 
     llm_result = await call_llm_api(prompt_content)
-
+    
+    print(session_id)
+    # Create interview entry using new column names
     new_record = InterviewEntry(
-        session_id=session_id,
-        enterprise=company_info or "未指定",
-        content=save_content,
-        llm_response=llm_result
+        session_id=interview_session.id,
+        question_text=llm_result,
+        answer_text=save_content
     )
     db.add(new_record)
     db.commit()
@@ -137,7 +178,7 @@ async def process_prompt(
     return {
         "status": "success",
         "saved_id": new_record.id,
-        "session_id": session_id,
+        "session_id": interview_session.id,
         "user_input": save_content,
         "response": llm_result
     }
