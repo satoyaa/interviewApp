@@ -43,6 +43,11 @@ const GoogleLoginButton = ({navigate}) => {
           onError={() => {
             console.log('GoogleログインのUIでエラーが発生しました．');
           }}
+          theme="outline"
+          size="large"
+          width="100%"
+          text="signin_with"
+          locale="ja"
         />
       </div>
     </GoogleOAuthProvider>

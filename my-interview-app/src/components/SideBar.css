@@ -101,33 +101,47 @@
 #sideBar:not(.isOpen) .sidebar li{ text-align:center; padding:10px 6px }
 #sideBar:not(.isOpen) .sidebar li span.label{ display:none }
 
+/* Sidebar Mask for Mobile */
+.sidebar-mask {
+  display: none;
+}
+
 @media screen and (max-width: 480px) {
-  #sideBar{
-    display: none;
+  #sideBar {
     position: fixed;
-    top: 0px;
-    left: 0px;
-    z-index: 1;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    display: block !important;
+    width: 260px !important;
   }
 
-  .hamburgerButton{
+  #sideBar.isOpen {
+    transform: translateX(0);
+  }
+
+  .hamburgerButton {
     display: block;
     position: fixed;
     top: 10px;
     left: 10px;
-    z-index: 2;
+    z-index: 1100;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
 
-  #sideBar.isOpen{
+  .sidebar-mask {
     display: block;
-  }
-
-  /* When the sidebar is closed on small screens, remove background and shadow */
-  #sideBar:not(.isOpen) {
-    background: transparent !important;
-    box-shadow: none !important;
-    border-right: none !important;
-    padding: 0 !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
   }
 }
 

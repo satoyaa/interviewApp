@@ -1,5 +1,6 @@
 import ResultVisual from "./ResultVisual";
 import HistoryAnalyzeAgain from "./HistoryAnalyzeAgain.jsx";
+import { Helmet } from "react-helmet-async";
 import './HistoryArea.css';
 
 import { AppContext} from './Context/Context.jsx';
@@ -110,6 +111,10 @@ const HistoryArea = () => {
 
     return (
         <section className="historyArea">
+        <Helmet>
+            <title>分析結果詳細 | 面接対策アプリ</title>
+            <meta name="description" content="実施した面接練習のスコアと詳細フィードバック．成長の軌跡を振り返り，次の練習に活かしましょう．" />
+        </Helmet>
         <HistoryAnalyzeAgain history_ID={historyId || history_ID}></HistoryAnalyzeAgain>
         <ResultVisual score={scoreData} feedback={feedbackData} title={title} chatData={chatData}></ResultVisual>
         </section>

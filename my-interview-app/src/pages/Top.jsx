@@ -11,6 +11,7 @@ const Top = () => {
     };
     return(
         <div id='center'>
+              <h1 className="sr-only">面接対策アプリ ダッシュボード</h1>
               <SideBar />
               <ContentsArea />
               <button 

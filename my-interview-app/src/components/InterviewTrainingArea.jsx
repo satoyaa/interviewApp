@@ -8,6 +8,7 @@
 import InterviewTrainingStart from "./InterviewTrainingStart";
 import InterviewTraining from "./InterviewTraining";
 import InterviewTrainingResult from "./InterviewTrainingResult";
+import { Helmet } from "react-helmet-async";
 
 import { useState } from "react";
 
@@ -55,6 +56,10 @@ const InterviewTrainingArea = () => {
     }
     return (
         <>
+        <Helmet>
+            <title>AI面接練習 | 面接対策アプリ</title>
+            <meta name="description" content="志望企業に合わせたAI面接官との実戦練習。リアルタイムな質問とフィードバックで合格力を高めます。" />
+        </Helmet>
         {goToInterviewTraining(interviewTrainingState)}   
         </>
     )

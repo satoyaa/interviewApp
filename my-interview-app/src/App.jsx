@@ -22,10 +22,11 @@ function ProtectedRoute({ children }) {
 
 function App() {
   const [history_ID, setHistory_ID] = useState("");
+  const [histories, setHistories] = useState([]);
   
   return (
     // Providerで全体を囲むことで，どの画面でもContextが使えるようにする
-    <AppContext.Provider value={{ history_ID, setHistory_ID }}>
+    <AppContext.Provider value={{ history_ID, setHistory_ID, histories, setHistories }}>
       <BrowserRouter>
         <Routes>
           {/* ログイン画面は保護せずそのまま表示 */}

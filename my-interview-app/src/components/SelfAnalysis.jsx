@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import SelfAnalysisFlowChart from './SelfAnalysisFlowChart';
 import SelfAnalysisHeader from './SelfAnalysisHeader';
 import './SelfAnalysis.css';
@@ -13,12 +14,42 @@ const fixedEdges = [
 ];
 
 const categoryStyles = {
-  think: { bg: '#DBEAFE', border: '#93C5FD', lightBg: '#EFF6FF', lightBorder: '#BFDBFE' },
-  why: { bg: '#DBEAFE', border: '#93C5FD', lightBg: '#EFF6FF', lightBorder: '#BFDBFE' },
-  gain: { bg: '#FEF08A', border: '#FDE047', lightBg: '#FEFCE8', lightBorder: '#FEF08A' },
-  appeal: { bg: '#FEF08A', border: '#FDE047', lightBg: '#FEFCE8', lightBorder: '#FEF08A' },
-  learn: { bg: '#BBF7D0', border: '#86EFAC', lightBg: '#F0FDF4', lightBorder: '#BBF7D0' },
-  contribution: { bg: '#BBF7D0', border: '#86EFAC', lightBg: '#F0FDF4', lightBorder: '#BBF7D0' },
+  think: { 
+    bg: '#F5F3FF', 
+    border: '#C4B5FD', 
+    lightBg: '#F5F3FF', 
+    lightBorder: '#DDD6FE' 
+  },
+  why: { 
+    bg: '#EFF6FF', 
+    border: '#93C5FD', 
+    lightBg: '#EFF6FF', 
+    lightBorder: '#BFDBFE' 
+  },
+  gain: { 
+    bg: '#FEFCE8', 
+    border: '#FDE047', 
+    lightBg: '#FEFCE8', 
+    lightBorder: '#FEF08A' 
+  },
+  appeal: { 
+    bg: '#FFF7ED', 
+    border: '#FDBA74', 
+    lightBg: '#FFF7ED', 
+    lightBorder: '#FED7AA' 
+  },
+  learn: { 
+    bg: '#F0FDF4', 
+    border: '#86EFAC', 
+    lightBg: '#F0FDF4', 
+    lightBorder: '#BBF7D0' 
+  },
+  contribution: { 
+    bg: '#FFF1F2', 
+    border: '#FDA4AF', 
+    lightBg: '#FFF1F2', 
+    lightBorder: '#FECDD3' 
+  },
 };
 
 const SelfAnalysis = () => {
@@ -37,13 +68,35 @@ const SelfAnalysis = () => {
           type: 'default',
           data: { 
             label: (
-              <div>
-                <strong>{node.data.label_title}</strong><br/>
-                {node.data.label_content}
+              <div style={{ padding: '0 20px' }}>
+                <div style={{ 
+                  fontSize: '1.25rem', 
+                  fontWeight: 'bold', 
+                  marginBottom: '1rem',
+                  color: '#1E293B'
+                }}>
+                  {node.data.label_title}
+                </div>
+                <div style={{ 
+                  fontSize: '0.9rem', 
+                  lineHeight: '1.6',
+                  color: '#475569',
+                  textAlign: 'left'
+                }}>
+                  {node.data.label_content}
+                </div>
               </div>
             ) 
           },
-          style: { backgroundColor: '#1E293B', color: 'white', borderRadius: '8px', padding: '16px', textAlign: 'center' },
+          style: { 
+            backgroundColor: '#F0F7FF', 
+            color: '#1E293B', 
+            borderRadius: '12px', 
+            border: '1px solid #D1E9FF',
+            padding: '24px', 
+            textAlign: 'center',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
+          },
         };
       }
 
@@ -52,14 +105,16 @@ const SelfAnalysis = () => {
         return {
           ...node,
           type: 'default',
-          data: { label: <strong>{node.data.label}</strong> },
+          data: { label: <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{node.data.label}</div> },
           style: { 
             backgroundColor: styleInfo?.bg, 
             borderColor: styleInfo?.border, 
-            borderRadius: '8px', 
+            borderRadius: '10px', 
+            borderWidth: '2px',
             display: 'flex', 
             alignItems: 'center', 
-            justifyContent: 'center' 
+            justifyContent: 'center',
+            padding: '8px'
           }
         };
       }
@@ -70,12 +125,13 @@ const SelfAnalysis = () => {
         return {
           ...node,
           type: 'default',
-          data: { label: <div>{node.data.label}</div> },
+          data: { label: <div style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{node.data.label}</div> },
           style: { 
             backgroundColor: styleInfo?.lightBg, 
             borderColor: styleInfo?.lightBorder, 
-            borderRadius: '8px', 
-            padding: '10px' 
+            borderRadius: '10px', 
+            borderWidth: '1px',
+            padding: '12px' 
           }
         };
       }
@@ -136,6 +192,10 @@ const SelfAnalysis = () => {
 
   return (
     <>
+      <Helmet>
+        <title>自己分析マインドマップ | 面接対策アプリ</title>
+        <meta name="description" content="過去の面接データからあなたの強みを可視化．エピソードを整理して話せるように" />
+      </Helmet>
       <SelfAnalysisHeader 
         HandleRequestSelfAnalysis={HandleRequestSelfAnalysis} 
         isLoading={isLoading}

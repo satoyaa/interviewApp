@@ -16,25 +16,32 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   
+  // 画面幅に応じてベースのサイズを調整
+  const isMobile = window.innerWidth <= 600;
+
   // 3階層になるため，縦の隙間（ranksep）を少し調整
-  dagreGraph.setGraph({ rankdir: direction, ranksep: 80, nodesep: 40 });
+  dagreGraph.setGraph({ 
+    rankdir: direction, 
+    ranksep: isMobile ? 60 : 100, 
+    nodesep: isMobile ? 30 : 60 
+  });
 
   nodes.forEach((node) => {
     let width, height;
 
     // ノードのID規則を使って階層を判定し，サイズを割り当てる
     if (node.id === 'center') {
-      // 親（エピソード概要）: 長文用 — 横幅を2倍に拡大
-      width = 640; // was 380
-      height = 320;
+      // 親（エピソード概要）
+      width = isMobile ? 320 : 600; 
+      height = isMobile ? 240 : 200;
     } else if (!node.id.includes('-')) {
-      // 子（項目名）: タイトルのみのコンパクトサイズ
-      width = 180;
+      // 子（項目名）
+      width = isMobile ? 140 : 180;
       height = 50;
     } else {
-      // 孫（エピソード詳細）: 50文字程度の標準サイズ
-      width = 220;
-      height = 100;
+      // 孫（エピソード詳細）
+      width = isMobile ? 180 : 240;
+      height = isMobile ? 120 : 100;
     }
 
     node.measuredWidth = width;
@@ -102,7 +109,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
   const layoutedEdges = edges.map((edge) => ({
     ...edge,
     type: 'smoothstep',
-    style: { stroke: '#94a3b8', strokeWidth: 2 },
+    style: { stroke: '#cbd5e1', strokeWidth: 1.5 },
   }));
 
   return { layoutedNodes, layoutedEdges };
@@ -148,7 +155,7 @@ const SelfAnalysisFlowChart = ({rawNodes, rawEdges}) => {
         fitView
         attributionPosition="bottom-right"
       >
-        <Background color="#ccc" gap={16} />
+        <Background variant="dots" gap={16} size={1} color="#f1f5f9" />
         <Controls />
       </ReactFlow>
     </div>

@@ -134,15 +134,52 @@
 }
 
 .resultComponent{
-    padding: 50px;
-  }
+  padding: 50px;
+  box-sizing: border-box;
+}
 
 @media screen and (max-width: 480px) {
   .resultComponent{
-    padding: 15px;
+    padding: 10px; /* 余白を最小限にして画面を広く使う */
   }
 
-  .result_bottom_area{
-    padding: 9px 6px;
+  .result_top_area {
+    padding: 10px 5px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .result_left {
+    min-width: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .overallScore {
+    position: static; /* チャートの上に重ねず、上部に配置 */
+    margin-bottom: 10px;
+    justify-content: center;
+  }
+
+  .radarChart {
+    width: 100%;
+    max-width: 350px; /* スマホの幅に合わせて調整 */
+    padding-top: 0;
+  }
+
+  .result_bottom_area {
+    padding: 10px 5px;
+  }
+
+  .result_bottom_area h2 {
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  .result_bottom_area li {
+    margin-bottom: 20px;
+    font-size: 14px;
   }
 }

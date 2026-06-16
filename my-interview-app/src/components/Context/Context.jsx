@@ -5,5 +5,7 @@ import { createContext} from 'react';
 //historyAreaとhistoryNavigationをつなぐためにApp.jsxで実装
 export const AppContext = createContext({
     history_ID: "",
-    setHistory_ID: () => {}
+    setHistory_ID: () => {},
+    histories: [],
+    setHistories: () => {}
 });

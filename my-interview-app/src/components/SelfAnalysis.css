@@ -1,39 +1,39 @@
 .selfAnalysisHeader{
     height: 15vh;
+    background-color: #cbd5e1;
 }
 
 .flowChartWrapper {
   width: 100%;
   height: 85vh;
-  background-color: #f8fafc;
+  background-color: #ffffff;
 }
 
 /* React Flow node styling to match the flowchart image */
 .flowChartWrapper .react-flow__node {
   box-shadow: none;
   font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  border: none !important; /* Let inline styles handle borders */
 }
 
-/* Default node appearance (used for center, child, grandchild) */
+/* Default node appearance override */
 .flowChartWrapper .react-flow__node-default {
-  border: 2px solid transparent;
-  box-shadow: 0 6px 18px rgba(2,6,23,0.08);
+  background: none;
+  padding: 0;
 }
 
-/* Center (episode) node larger, dark background already set inline but ensure typography */
-.flowChartWrapper .react-flow__node[data-id="center"] .react-flow__node-body {
-  color: #fff;
-  font-size: 16px;
-  line-height: 1.45;
+/* Center (episode) node styling */
+.flowChartWrapper .react-flow__node[data-id="center"] {
+  cursor: default;
 }
 
 /* Child nodes (category titles) styling */
-.flowChartWrapper .react-flow__node[data-id^="think"],
-.flowChartWrapper .react-flow__node[data-id^="gain"],
-.flowChartWrapper .react-flow__node[data-id^="learn"],
-.flowChartWrapper .react-flow__node[data-id^="why"],
-.flowChartWrapper .react-flowWrapper .react-flow__node[data-id^="appeal"],
-.flowChartWrapper .react-flow__node[data-id^="contribution"] {
+.flowChartWrapper .react-flow__node[data-id="think"],
+.flowChartWrapper .react-flow__node[data-id="gain"],
+.flowChartWrapper .react-flow__node[data-id="learn"],
+.flowChartWrapper .react-flow__node[data-id="why"],
+.flowChartWrapper .react-flow__node[data-id="appeal"],
+.flowChartWrapper .react-flow__node[data-id="contribution"] {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,30 +41,37 @@
 
 /* Grandchild nodes (detail boxes) */
 .flowChartWrapper .react-flow__node[id*="-"] {
-  font-size: 14px;
-  color: #0f172a;
+  color: #334155;
 }
 
 /* Make node labels wrap and center where needed */
 .flowChartWrapper .react-flow__node .react-flow__node-label {
   white-space: normal;
   text-align: center;
+  width: 100%;
 }
 
 /* Edge styling */
 .flowChartWrapper .react-flow__edge-path {
-  stroke: #94a3b8 !important;
-  stroke-width: 2px !important;
+  stroke: #cbd5e1 !important;
+  stroke-width: 1.5px !important;
 }
 
 /* Remove default background grid look for a cleaner visual */
 .flowChartWrapper .react-flow__attribution,
 .flowChartWrapper .react-flow__background {
-  opacity: 0.6;
+  opacity: 0.4;
 }
 
 /* Responsive tweaks */
-@media (max-width: 1000px) {
-  .flowChartWrapper { height: 70vh; }
-  .flowChartWrapper .react-flow__node[data-id="center"] .react-flow__node-body { font-size: 14px; }
+@media (max-width: 600px) {
+  .flowChartWrapper { 
+    height: 75vh; 
+  }
+  .flowChartWrapper .react-flow__node[data-id="center"] .react-flow__node-body { 
+    font-size: 13px; 
+  }
+  .flowChartWrapper .react-flow__node[id*="-"] {
+    font-size: 12px;
+  }
 }

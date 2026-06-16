@@ -1,0 +1,140 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.login-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.login-subtitle {
+  font-size: 16px;
+  color: #64748b;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  min-height: 500px; /* Added min-height to create the large card look */
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.google-login-wrapper {
+  width: 100%;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.spacer {
+  flex-grow: 1; /* This will push the buttons to the top and bottom */
+}
+
+.usage-button {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #63aff1 0%, #43aed9 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: auto; /* Push to bottom if combined with flex layout */
+  margin-bottom: 24px;
+  transition: opacity 0.2s;
+}
+
+.login-button:hover {
+  opacity: 0.9;
+}
+
+.signup-text {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.signup-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
+
+.login-footer {
+  margin-top: 60px;
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.footer-link {
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.footer-link:hover {
+  color: #64748b;
+}
+
+.footer-separator {
+  color: #e2e8f0;
+}
+
+@media screen and (max-width: 480px) {
+  .login-header {
+    margin-bottom: 24px;
+    padding: 0 16px;
+  }
+
+  .login-title {
+    font-size: 24px;
+  }
+
+  .login-subtitle {
+    font-size: 14px;
+  }
+
+  .login-card {
+    padding: 24px;
+    min-height: 400px;
+    width: 90%;
+    border-radius: 12px;
+  }
+
+  .usage-button {
+    padding: 12px;
+    font-size: 15px;
+  }
+
+  .login-footer {
+    margin-top: 40px;
+    gap: 12px;
+    font-size: 12px;
+  }
+}

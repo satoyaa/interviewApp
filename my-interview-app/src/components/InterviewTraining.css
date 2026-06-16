@@ -145,7 +145,7 @@
 }
 
 .bubbleCol{
-  
+  width: 100%;
 }
 
 .speechBubble{
@@ -156,6 +156,7 @@
   box-shadow: 0 1px 4px rgba(16,24,40,0.04);
   max-width:760px;
   width: 50vw;
+  box-sizing: border-box;
 }
 
 /* ensure inner text is left-aligned */
@@ -215,11 +216,6 @@
   cursor:pointer;
 }
 
-@media (max-width:600px){
-  .speechBubble form{ flex-direction:column; align-items:stretch }
-  .speechBubble form input[type="button"], .speechBubble > button{ margin-left:0 }
-}
-
 /* placeholder styling for subtle hint color */
 .speechBubble form input[type="text"]::placeholder,
 .speechBubble form textarea::placeholder{
@@ -235,9 +231,42 @@
 
 /* small responsive */
 @media (max-width:600px){
-  .interviewBody{ flex-direction:row }
-  .speechBubble{ padding:12px }
-  .robotCol{ width:44px }
+  .interviewTraining {
+    padding: 10px 12px;
+  }
+  .interviewHeader {
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+  .headerLeft {
+    gap: 8px;
+    font-size: 14px;
+  }
+  .qLabel, .qCounter {
+    font-size: 16px;
+  }
+  .finishButton {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .interviewBody{ 
+    flex-direction: row;
+    gap: 8px;
+  }
+  .speechBubble{ 
+    padding: 12px;
+    width: 92%; /* モバイルでは幅を広げる */
+    max-width: none;
+  }
+  .robotCol{ 
+    width: 32px; /* ロボットを少し小さく */
+  }
+  .robotIcon {
+    width: 32px;
+    height: 32px;
+  }
+  .speechBubble form{ flex-direction:column; align-items:stretch }
+  .speechBubble form input[type="button"], .speechBubble > button{ margin-left:0 }
 }
 
 

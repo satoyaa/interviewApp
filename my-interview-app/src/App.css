@@ -2,32 +2,22 @@
 
 #center {
   display: flex;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
+  min-height: 100vh;
 }
-
-#sideBar{
-  width: 80px;
-  height: 100vh;
-  padding:10px;
-  background-color: #f2f2f2;
-  flex-direction: column;
-  flex-shrink: 0;
-  transition: width 0.3s ease;
-  display: flex;
-  place-items: start;
-  place-content: start;
-}
-
-#sideBar.isOpen{
-  width: 280px;
-
-}
-
 
 #contentsArea{
   flex-grow: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media screen and (max-width: 480px) {
+  #center {
+    flex-direction: column;
+  }
+  #contentsArea {
+    padding: 60px 0 20px 0; /* ハンバーガーボタンとの重なりを考慮して上部に広めの余白 */
+  }
 }
 
 

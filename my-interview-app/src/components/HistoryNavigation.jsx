@@ -4,9 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {AppContext} from './Context/Context.jsx'
 
 const HistoryNavigation = () => {
-    const [histories, setHistories] = useState([]);
-
-    const {history_ID, setHistory_ID} = useContext(AppContext);
+    const {history_ID, setHistory_ID, histories, setHistories} = useContext(AppContext);
 
     useEffect(() => {
         const fetchHistory = async () => {

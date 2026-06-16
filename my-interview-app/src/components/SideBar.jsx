@@ -10,11 +10,12 @@ import HistoryNavigation from './HistoryNavigation'
 const SideBar = () => {
     const [isOpen, setIsOpen] = useState(true)
     return(
+        <>
         <aside >
             <button onClick={()=>{setIsOpen(!isOpen)}} className='hamburgerButton'>
                 <img src={hamburger} alt="ハンバーガーメニュー" />
             </button>
-            <div id="sideBar" className={isOpen ? 'isOpen' : ''}>
+            <nav id="sideBar" className={isOpen ? 'isOpen' : ''}>
                 <ul className={isOpen ? 'sidebar isOpen' : 'sidebar'}>
                 <li role="button"><NavLink to="/interviewTraining">面接対策を始める</NavLink></li>
                 <li role="button"><NavLink to="/selfAnalysis">自己分析をする</NavLink></li>
@@ -22,8 +23,10 @@ const SideBar = () => {
                     <HistoryNavigation />
                 </li>
             </ul>
-            </div>
+            </nav>
         </aside>
+        {isOpen && <div className="sidebar-mask" onClick={() => setIsOpen(false)}></div>}
+        </>
     )
 }
 

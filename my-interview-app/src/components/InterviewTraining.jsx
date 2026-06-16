@@ -2,15 +2,17 @@
 面接対策では，質問，回答を繰り返し表示して指定回数回答を終えるまでこれを繰り返します．
 */
 
-import { use, useState } from "react";
+import { useContext, useState } from "react";
 import InterviewTrainingQuestion from "./InterviewTrainingQuestion";
 import InterviewTrainingAnswer from "./InterviewTrainingAnswer";
 import reactIcon from "../assets/react.svg";
 import InterviewTrainingLoading from "./InterviewTriningLoading";
+import { AppContext } from "./Context/Context.jsx";
 
 
 
 const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurrentQuestion, sessionID, interviewPhase, setInterviewPhase, selected, setSelected, company, setCompany}) => {
+    const { setHistories } = useContext(AppContext);
     const [questionAnswerState, setQuestionAnswerState] = useState("question");
     const [countAnswer, setCountAnswer] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
@@ -52,6 +54,22 @@ const InterviewTraining = ({setInterviewTrainingState, currentQuestion, setCurre
             
             if (!response.ok) {
                 throw new Error("分析処理に失敗しました．");
+            }
+
+            // 分析が完了したら履歴を更新する
+            const historyResponse = await fetch(`http://127.0.0.1:8000/api/history`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (historyResponse.ok) {
+                const historyData = await historyResponse.json();
+                if (historyData.history_data) {
+                    const formattedHistory = historyData.history_data.map(item => ({
+                        title: item.title,
+                        id: item.id,
+                        date: item.date
+                    }));
+                    setHistories(formattedHistory);
+                }
             }
             
             // 分析が完了したら各stateを初期値に戻し結果画面へ状態を遷移させる
