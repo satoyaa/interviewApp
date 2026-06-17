@@ -10,6 +10,10 @@ class User(Base):
     __tablename__ = "users"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     auth_provider_id = Column(String(255), unique=True, nullable=False)
+    api_requests = Column(Integer, default=0, server_default="0", nullable=False)
+    last_api_reset_date = Column(DateTime(timezone=True), nullable=True)
+    self_analysis_cooltime = Column(Integer, default=0, server_default="0", nullable=False)
+    self_analysis_date = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

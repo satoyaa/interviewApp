@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 from db.database import get_db
 from db.models import InterviewEntry, SelfAnalysis, InterviewSession, User
 from services.llm import analyze_interview_history
@@ -43,50 +45,35 @@ async def generate_self_analysis(
     # LLMに渡すために対話履歴を時系列順（古い順）に並び替える
     entries.reverse()
 
+    # API request count check and increment
+    if current_user.api_requests >= 12:
+        raise HTTPException(status_code=429, detail="本日のAPI呼び出し上限（12回）に達しました。")
+
+    # 自己分析クールタイムチェック (3日間)
+    if current_user.self_analysis_cooltime == 1 and current_user.self_analysis_date:
+        next_available = current_user.self_analysis_date + timedelta(days=3)
+        if datetime.now(timezone.utc) < next_available.astimezone(timezone.utc):
+            # 日本時間で表示
+            next_jst = next_available.astimezone(ZoneInfo("Asia/Tokyo"))
+            raise HTTPException(
+                status_code=429, 
+                detail=f"自己分析は3日間に1回のみ実行可能です。次に実行できるのは {next_jst.strftime('%Y/%m/%d %H:%M')} 以降です。"
+            )
+    
+    current_user.api_requests += 1
+    db.commit()
+
     # LLMで分析を実行
     analysis_data = await analyze_interview_history(entries)
     print(analysis_data)
 
-    # 全体分析用のレコードを検索 (User-specific)
-    session_placeholder = db.query(InterviewSession).filter(
-        InterviewSession.id == GLOBAL_ANALYSIS_ID,
-        InterviewSession.user_id == current_user.id
-    ).first()
+    # ... (既存のコード)
     
-    if not session_placeholder:
-        session_placeholder = InterviewSession(id=GLOBAL_ANALYSIS_ID, user_id=current_user.id, company_name="__global__")
-        db.add(session_placeholder)
-        db.commit()
-        db.refresh(session_placeholder)
-
-    db_analysis = db.query(SelfAnalysis).filter(
-        SelfAnalysis.session_id == GLOBAL_ANALYSIS_ID,
-        SelfAnalysis.user_id == current_user.id
-    ).first()
-    
-    if db_analysis:
-        db_analysis.episode_summary = analysis_data["episode_summary"]
-        db_analysis.think_list = analysis_data["think_list"]
-        db_analysis.gain_list = analysis_data["gain_list"]
-        db_analysis.learn_list = analysis_data["learn_list"]
-        db_analysis.why_list = analysis_data["why_list"]
-        db_analysis.appeal_list = analysis_data["appeal_list"]
-        db_analysis.contribution_list = analysis_data["contribution_list"]
-    else:
-        db_analysis = SelfAnalysis(
-            session_id=GLOBAL_ANALYSIS_ID, # 固定の識別子で保存
-            user_id=current_user.id,
-            episode_summary=analysis_data["episode_summary"],
-            think_list=analysis_data["think_list"],
-            gain_list=analysis_data["gain_list"],
-            learn_list=analysis_data["learn_list"],
-            why_list=analysis_data["why_list"],
-            appeal_list=analysis_data["appeal_list"],
-            contribution_list=analysis_data["contribution_list"]
-        )
-        db.add(db_analysis)
-    
+    # 成功時にクールタイムを設定
+    current_user.self_analysis_cooltime = 1
+    current_user.self_analysis_date = datetime.now(timezone.utc)
     db.commit()
+
     return {"message": f"最新の {len(entries)} 件の面接データを基に分析が完了しました．"}
 
 

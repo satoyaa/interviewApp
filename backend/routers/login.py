@@ -8,6 +8,7 @@ import os
 from datetime import datetime, timedelta, timezone
 import jwt
 from core.limiter import limiter
+from core.auth import get_current_user
 from db.database import get_db
 from db.models import User
 
@@ -70,3 +71,20 @@ async def verify_google_token(request: Request, request_body: GoogleTokenRequest
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Googleトークンの検証に失敗しました．",
         )
+
+@router.get("/api/user/me")
+@limiter.limit("10/minute")
+async def get_user_me(request: Request, current_user: User = Depends(get_current_user)):
+    request.state.user = current_user.auth_provider_id
+    
+    next_self_analysis_at = None
+    if current_user.self_analysis_date:
+        next_self_analysis_at = (current_user.self_analysis_date + timedelta(days=3)).isoformat()
+
+    return {
+        "id": current_user.id,
+        "email": current_user.auth_provider_id,
+        "api_requests": current_user.api_requests,
+        "self_analysis_cooltime": current_user.self_analysis_cooltime,
+        "next_self_analysis_at": next_self_analysis_at
+    }

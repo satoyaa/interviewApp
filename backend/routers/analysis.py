@@ -34,6 +34,13 @@ async def process_db_data(request: Request,
         history_text += f"応募者: {r.answer_text}\n"
         history_text += f"面接官: {r.question_text}\n\n"
 
+    # API request count check and increment
+    if current_user.api_requests >= 12:
+        raise HTTPException(status_code=429, detail="本日のAPI呼び出し上限（12回）に達しました。")
+    
+    current_user.api_requests += 1
+    db.commit()
+
     analysis_result = await call_llm_api_for_analyze(history_text)
 
     generated_title = analysis_result.get("title", "無題の面接対策")
@@ -76,6 +83,13 @@ async def update_process_db_data(request: Request,
         history_text += f"【ターン{i+1}】\n"
         history_text += f"応募者: {r.answer_text}\n"
         history_text += f"面接官: {r.question_text}\n\n"
+
+    # API request count check and increment
+    if current_user.api_requests >= 12:
+        raise HTTPException(status_code=429, detail="本日のAPI呼び出し上限（12回）に達しました。")
+    
+    current_user.api_requests += 1
+    db.commit()
 
     analysis_result = await call_llm_api_for_analyze(history_text)
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./InterviewTraining.css";
 import "./InterviewTrainingStart.css"
 import InterviewTrainingLoading from "./InterviewTriningLoading";
@@ -50,6 +50,7 @@ function SortableItem(props) {
 const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, setSessionID, selected, setSelected, company, setCompany}) => {
 
     const count_max = 5; // 各フェーズの最大練習回数
+    const [count_total_max, setCount_total_max] = useState(12); // 各フェーズの最大選択可能回数 
     const selectOptions = [
         { id: "pr", name: "自己PR" },
         { id: "gakutika", name: "ガクチカ" },
@@ -68,6 +69,33 @@ const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, 
         { id: "english", name: "英語面接" },
     ];
     const [isLoading, setIsLoading] = useState(false);
+    const [dbApiCount, setDbApiCount] = useState(null);
+    const systemMax = 12;
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch("http://127.0.0.1:8000/api/user/me", {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const used = data.api_requests || 0;
+                    setDbApiCount(used);
+                    const remaining = Math.max(0, systemMax - used);
+                    setCount_total_max(Math.min(remaining, systemMax));
+                }
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+            }
+        };
+        fetchUserData();
+    }, []);
+
+    const totalCount = selected.reduce((sum, item) => sum + (item.count || 1), 0);
 
     // --- dnd-kit用の設定 ---
     const sensors = useSensors(
@@ -92,6 +120,7 @@ const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, 
     // ----------------------
 
     const handleAdd = (item) => {
+        if (totalCount >= count_total_max-1) return;
         setSelected((prev) => {
             if (prev.find((p) => p.id === item.id)) return prev;
             return [...prev, { ...item, count: 1 }]; 
@@ -103,6 +132,7 @@ const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, 
     };
 
     const handleIncrement = (id) => {
+        if (totalCount >= count_total_max-1) return;
         setSelected((prev) => prev.map((p) => {
             if (p.id !== id) return p;
             const current = p.count || 1; 
@@ -167,13 +197,20 @@ const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, 
 
     return(
         <section className="training">
-            <h2>対策項目を選んでください</h2>
+            <div className="training_header_area">
+                <h2>対策項目を選んでください</h2>
+                {dbApiCount !== null && (
+                    <span className="api_remaining_label">
+                        質問数: {dbApiCount + totalCount}+1(分析)/{systemMax}回
+                    </span>
+                )}
+            </div>
             <div className="select_area">
                 <div className="select_items">
                     <ul>
                         {selectOptions.map((opt) => (
                             <li className="select_item" key={opt.id}>
-                                {opt.name} <button type="button" className="add_button" onClick={() => handleAdd(opt)}>追加</button>
+                                {opt.name} <button type="button" className="add_button" onClick={() => handleAdd(opt)} disabled={totalCount >= count_total_max-1}>追加</button>
                             </li>
                         ))}
                     </ul>
@@ -208,7 +245,7 @@ const InterviewTrainingStart = ({setInterviewTrainingState, setCurrentQuestion, 
                                                 type="button" 
                                                 onClick={() => handleIncrement(item.id)} 
                                                 onPointerDown={(e) => e.stopPropagation()} // 追加
-                                                disabled={(item.count ?? 1) >= count_max}
+                                                disabled={(item.count ?? 1) >= count_max || totalCount >= count_total_max-1}
                                             >
                                                 +
                                             </button>

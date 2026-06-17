@@ -9,3 +9,4 @@ google-auth
 pydantic
 slowapi
 psycopg2-binary
+alembic
